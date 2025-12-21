@@ -8,6 +8,9 @@ public class CharacterDefinition : ScriptableObject
     public Sprite protrait; // 角色的頭像，可留空
     public IDCardDefinition idCard; // 角色對應的身分證
 
+    public JumpScareSequence jumpScareSequence;
+
+
     [Header("監視器畫面")]
     public Sprite[] monitorImages = new Sprite[3]; // 三張監視器畫面
 }

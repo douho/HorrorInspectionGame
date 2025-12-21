@@ -59,11 +59,8 @@ public class GameFlowController : MonoBehaviour
             return;
         }
 
-        if (currentIndex == 2)
-        {
-            Debug.Log("第三位訪客 → 觸發 Jumpscare！");
-            FindObjectOfType<JumpscareController>()?.TriggerJumpscare();
-        }
+        // 取代原本寫死的第三位訪客 Jumpscare
+        TryTriggerJumpScare(ch, TriggerCondition.OnCamSwitch);
 
         // 顯示身分證（小卡固定、大卡換圖）
         idCardUI.SetCard(ch.idCard);
@@ -114,6 +111,22 @@ public class GameFlowController : MonoBehaviour
     void ShowEnding()
     {
         Debug.Log("所有外來者結束 → 顯示結局");
+    }
+    private void TryTriggerJumpScare(CharacterDefinition ch, TriggerCondition condition)
+    {
+        if (ch.jumpScareSequence != null && ch.jumpScareSequence.triggerCondition == condition)
+        {
+            StartCoroutine(ExecuteJumpScare(ch.jumpScareSequence));
+        }
+    }
+
+    private System.Collections.IEnumerator ExecuteJumpScare(JumpScareSequence seq)
+    {
+        foreach (var step in seq.steps)
+        {
+            yield return new WaitForSeconds(step.delay);
+            FeedbackSystem.Instance.Trigger(step.feedbackType);
+        }
     }
 
 

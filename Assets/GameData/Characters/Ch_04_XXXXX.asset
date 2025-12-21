@@ -16,3 +16,8 @@ MonoBehaviour:
   displayName: 
   protrait: {fileID: 0}
   idCard: {fileID: 0}
+  jumpScareSequence: {fileID: 11400000, guid: d9789b605d640b54b98242f045178c6a, type: 2}
+  monitorImages:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
