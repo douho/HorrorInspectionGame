@@ -3,7 +3,7 @@ using UnityEngine;
 public class JumpscareController : MonoBehaviour
 {
     public GameObject jumpscareImage;  // 一張大圖，平常關閉
-    public float showTime = 0.4f;
+    public float showTime = 1.0f;
 
     private void Awake()
     {
