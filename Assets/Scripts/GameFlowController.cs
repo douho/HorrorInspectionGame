@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -32,6 +33,12 @@ public class GameFlowController : MonoBehaviour
             list.Deactivate(); // 關閉放大版
         }
         StartNext();
+    }
+    public static GameFlowController Instance;
+
+    private void Awake()
+    {
+        Instance = this;
     }
 
     /// <summary>
@@ -135,7 +142,7 @@ public class GameFlowController : MonoBehaviour
         }
     }
 
-    private System.Collections.IEnumerator ExecuteStep(FeedbackStep step)
+    public IEnumerator ExecuteStep(FeedbackStep step)
     {
         if (step.delay > 0)
             yield return new WaitForSeconds(step.delay);
@@ -155,8 +162,8 @@ public class GameFlowController : MonoBehaviour
         {
             FeedbackSystem.Instance.Trigger(step.feedbackType);
         }
-
     }
+
 
 
     void OnEnable()
@@ -176,7 +183,7 @@ public class GameFlowController : MonoBehaviour
         if (ch == null) return;//當流程已結束時，CAM 切換也不會觸發任何錯誤
         if (seq == null) return;
 
-        if (triggeredCamSteps.Contains(camIndex)) return;
+        if (triggeredCamSteps.Contains(camIndex)) return; // 避免重複觸發
         triggeredCamSteps.Add(camIndex);
 
         foreach (var step in seq.steps)

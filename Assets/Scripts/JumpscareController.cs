@@ -16,7 +16,11 @@ public class JumpscareController : MonoBehaviour
     public void TriggerJumpscare(Sprite img)
     {
         if (img != null)
-            jumpscareImage.GetComponent<UnityEngine.UI.Image>().sprite = img;
+        {
+            var image = jumpscareImage.GetComponent<UnityEngine.UI.Image>();
+            image.sprite = img;
+            image.color = new Color(1, 1, 1, 1); // ← 加這行，確保圖片不透明
+        }
 
         // 顯示大圖
         jumpscareImage.SetActive(true);
@@ -26,6 +30,7 @@ public class JumpscareController : MonoBehaviour
 
         // 幾秒後關閉 jumpscare 圖片
         Invoke(nameof(Hide), showTime);
+
     }
 
     private void Hide()

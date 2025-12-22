@@ -1,4 +1,5 @@
 // Assets/Scripts/Data/JumpScareSequence.cs
+using System.Linq;
 using UnityEngine;
 
 public enum TriggerCondition { OnCamSwitch, OnDecision }
@@ -8,6 +9,29 @@ public class JumpScareSequence : ScriptableObject
 {
     public TriggerCondition triggerCondition;
     public FeedbackStep[] steps;
+
+    private bool[] triggeredSteps;
+
+    private void Awake()
+    {
+        triggeredSteps = new bool[steps.Length];
+    }
+
+    public void TriggerIfMatchCam(int camIndex)
+    {
+        for (int i = 0; i < steps.Length; i++)
+        {
+            var step = steps[i];
+            if (triggeredSteps[i]) continue; // 已經執行過就跳過
+
+            if (triggerCondition == TriggerCondition.OnCamSwitch && step.triggerCamIndex == camIndex)
+            {
+                triggeredSteps[i] = true; // 記錄為已觸發
+                GameFlowController.Instance.StartCoroutine(GameFlowController.Instance.ExecuteStep(step));
+            }
+        }
+    }
+
 }
 
 [System.Serializable]
@@ -24,4 +48,6 @@ public struct FeedbackStep
     public Sprite jumpscareImage; // 給 FeedbackType.Jumpscare 用（大驚嚇）
 
 }
+
+
 

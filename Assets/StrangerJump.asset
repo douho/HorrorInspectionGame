@@ -14,15 +14,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   triggerCondition: 0
   steps:
+  - feedbackType: 0
+    delay: 1.5
+    triggerCamIndex: 1
+    silenceAudio: 0
+    overrideImage: {fileID: 21300000, guid: b5e7b05eabaa1ac4da1f67ef8dff31ec, type: 3}
+    jumpscareImage: {fileID: 21300000, guid: b5e7b05eabaa1ac4da1f67ef8dff31ec, type: 3}
   - feedbackType: 2
     delay: 1.5
     triggerCamIndex: 0
     silenceAudio: 1
     overrideImage: {fileID: 21300000, guid: adda9503f7587af48b5874e67297affe, type: 3}
     jumpscareImage: {fileID: 0}
-  - feedbackType: 0
-    delay: 1.5
-    triggerCamIndex: 2
-    silenceAudio: 0
-    overrideImage: {fileID: 0}
-    jumpscareImage: {fileID: 21300000, guid: b5e7b05eabaa1ac4da1f67ef8dff31ec, type: 3}
