@@ -83,6 +83,14 @@ public class CamSwitchController : MonoBehaviour
         // ★ 強制切換也要觸發 OnCamChanged，否則 Tutorial 的進度會不會跑
         OnCamChanged?.Invoke(currentCamIndex);
     }
+
+    //支援覆蓋 CAM 畫面
+    public void SetOverrideImage(Sprite overrideSprite) 
+    {
+        if (camDisplay != null && overrideSprite != null)
+            camDisplay.sprite = overrideSprite;
+    }
+
     void UpdateCamView() 
     {
         //Debug.Log($"[CamSwitch] UpdateCamView() 目標Image={camDisplay?.name}，要設的圖={camImages?[currentCamIndex]?.name}", this);

@@ -5,13 +5,19 @@ public class JumpscareController : MonoBehaviour
     public GameObject jumpscareImage;  // 一張大圖，平常關閉
     public float showTime = 1.0f;
 
+    public Sprite defaultJumpscareImage; // 預設的 jumpscare 圖片，按J跳出
+
+
     private void Awake()
     {
         jumpscareImage.SetActive(false);
     }
 
-    public void TriggerJumpscare()
+    public void TriggerJumpscare(Sprite img)
     {
+        if (img != null)
+            jumpscareImage.GetComponent<UnityEngine.UI.Image>().sprite = img;
+
         // 顯示大圖
         jumpscareImage.SetActive(true);
 
@@ -30,7 +36,7 @@ public class JumpscareController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.J)) // 按 J 播 jumpscare
         {
-            TriggerJumpscare();
+            TriggerJumpscare(defaultJumpscareImage);
         }
     }
 

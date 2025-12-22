@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class GameFlowController : MonoBehaviour
@@ -11,6 +12,9 @@ public class GameFlowController : MonoBehaviour
     public GameObject decisionUI;// 入境/不入境按鈕群組（Canvas 上的物件）
     public CamSwitchController camController; // 監視器切換 UI
     public TransitionManager transitionManager;
+
+    private HashSet<int> triggeredCamSteps = new(); // 加一個「已執行過的 CAM Index 記錄」，避免同一張圖多次觸發 override。
+
 
 
     int currentIndex = -1;
@@ -35,6 +39,8 @@ public class GameFlowController : MonoBehaviour
     /// </summary>
     public void StartNext()
     {
+        triggeredCamSteps.Clear();//清除 triggeredCamSteps： 新角色開始時，重置已觸發的 CAM 步驟記錄。
+
         if (TutorialManager.TutorialFinished)
         {
             // 正式遊戲 → 清空對話框，並停用 DialogueManager
@@ -129,6 +135,59 @@ public class GameFlowController : MonoBehaviour
         }
     }
 
+    private System.Collections.IEnumerator ExecuteStep(FeedbackStep step)
+    {
+        if (step.delay > 0)
+            yield return new WaitForSeconds(step.delay);
+
+        if (step.silenceAudio)
+            FeedbackSystem.Instance.Mute();
+
+        if (step.overrideImage != null)
+            camController.SetOverrideImage(step.overrideImage);
+
+        if (step.feedbackType == FeedbackType.Jumpscare)
+        {
+            Debug.Log("jumpscareImage 要播放的是：" + step.jumpscareImage?.name);
+            FindObjectOfType<JumpscareController>()?.TriggerJumpscare(step.jumpscareImage);
+        }
+        else
+        {
+            FeedbackSystem.Instance.Trigger(step.feedbackType);
+        }
+
+    }
+
+
+    void OnEnable()
+    {
+        CamSwitchController.OnCamChanged += HandleCamChanged;
+    }
+    void OnDisable()
+    {
+        CamSwitchController.OnCamChanged -= HandleCamChanged;
+    }
+
+    void HandleCamChanged(int camIndex)
+    {
+        var ch = characterDB.GetByIndex(currentIndex);
+        var seq = ch.jumpScareSequence;
+
+        if (ch == null) return;//當流程已結束時，CAM 切換也不會觸發任何錯誤
+        if (seq == null) return;
+
+        if (triggeredCamSteps.Contains(camIndex)) return;
+        triggeredCamSteps.Add(camIndex);
+
+        foreach (var step in seq.steps)
+        {
+            if (step.triggerCamIndex == camIndex)
+            {
+                StartCoroutine(ExecuteStep(step));
+            }
+        }
+
+    }
 
     // Update is called once per frame
     void Update()

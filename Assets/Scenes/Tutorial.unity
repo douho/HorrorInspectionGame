@@ -3487,6 +3487,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   jumpscareImage: {fileID: 1904147798}
   showTime: 1
+  defaultJumpscareImage: {fileID: 21300000, guid: 0d87886b897ce7149968b4e95d42a1e5, type: 3}
 --- !u!1 &856075542
 GameObject:
   m_ObjectHideFlags: 0

@@ -90,6 +90,12 @@ public class FeedbackSystem : MonoBehaviour
 
         audioSource.PlayOneShot(clip);
     }
+    public void Mute()
+    {
+        if (audioSource != null)
+            audioSource.Stop();
+    }
+
 
     // ====== ¤â§â¾_°Ê ======
     void DoVibration(float lowFreq, float highFreq)

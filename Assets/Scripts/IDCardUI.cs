@@ -29,6 +29,13 @@ public class IDCardUI : MonoBehaviour
     // 外來者到場時，由流程控制器呼叫
     public void SetCard(IDCardDefinition def)
     {
+        if (def != null && def.name == "EmptyIDCard") //只關閉 open/closed image，而不是整個卡 UI
+        {
+            closedIconRoot.SetActive(false);
+            openViewRoot.SetActive(false);
+            return;
+        }
+
         currentDef = def;
         if (def != null && def.cardSprite != null)
         {
