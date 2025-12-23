@@ -88,7 +88,8 @@ public class GameFlowController : MonoBehaviour
         cam.ForceSwitchTo(0);   // ★ 強制回到 CAM001（index = 0）
 
         Debug.Log($"StartNext: index={currentIndex}, character={ch?.displayName}, card={(ch?.idCard != null ? "OK" : "NULL")}");
-
+        if (ch.jumpScareSequence != null)
+            ch.jumpScareSequence.Init();
     }
     public void OnCheckListFinished()
     {
@@ -186,13 +187,7 @@ public class GameFlowController : MonoBehaviour
         if (triggeredCamSteps.Contains(camIndex)) return; // 避免重複觸發
         triggeredCamSteps.Add(camIndex);
 
-        foreach (var step in seq.steps)
-        {
-            if (step.triggerCamIndex == camIndex)
-            {
-                StartCoroutine(ExecuteStep(step));
-            }
-        }
+        seq.TriggerIfMatchCam(camIndex);
 
     }
 

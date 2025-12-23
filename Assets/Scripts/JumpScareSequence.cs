@@ -1,4 +1,5 @@
 // Assets/Scripts/Data/JumpScareSequence.cs
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -11,6 +12,8 @@ public class JumpScareSequence : ScriptableObject
     public FeedbackStep[] steps;
 
     private bool[] triggeredSteps;
+    private HashSet<int> triggeredCamSteps = new();
+
 
     private void Awake()
     {
@@ -22,15 +25,20 @@ public class JumpScareSequence : ScriptableObject
         for (int i = 0; i < steps.Length; i++)
         {
             var step = steps[i];
-            if (triggeredSteps[i]) continue; // 已經執行過就跳過
+            if (step.triggerCamIndex != camIndex) continue;
+            if (triggeredCamSteps.Contains(i)) continue;
 
-            if (triggerCondition == TriggerCondition.OnCamSwitch && step.triggerCamIndex == camIndex)
-            {
-                triggeredSteps[i] = true; // 記錄為已觸發
-                GameFlowController.Instance.StartCoroutine(GameFlowController.Instance.ExecuteStep(step));
-            }
+            triggeredCamSteps.Add(i); // 標記此步驟已觸發
+            GameFlowController.Instance.StartCoroutine(GameFlowController.Instance.ExecuteStep(step));
         }
     }
+
+    public void Init()
+    {
+        triggeredCamSteps.Clear();
+    }
+
+
 
 }
 

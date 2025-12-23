@@ -19,7 +19,7 @@ public class JumpscareController : MonoBehaviour
         {
             var image = jumpscareImage.GetComponent<UnityEngine.UI.Image>();
             image.sprite = img;
-            image.color = new Color(1, 1, 1, 1); // ← 加這行，確保圖片不透明
+            //image.color = new Color(1, 1, 1, 1); // ← 加這行，確保圖片不透明
         }
 
         // 顯示大圖
