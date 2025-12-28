@@ -16,9 +16,9 @@ MonoBehaviour:
   steps:
   - feedbackType: 0
     delay: 0.8
-    triggerCamIndex: 1
+    triggerCamIndex: 2
     silenceAudio: 0
-    overrideImage: {fileID: 0}
+    overrideImage: {fileID: 21300000, guid: b5e7b05eabaa1ac4da1f67ef8dff31ec, type: 3}
     jumpscareImage: {fileID: 21300000, guid: b5e7b05eabaa1ac4da1f67ef8dff31ec, type: 3}
   - feedbackType: 2
     delay: 0.5

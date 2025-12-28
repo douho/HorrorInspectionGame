@@ -13,6 +13,7 @@ public class GameFlowController : MonoBehaviour
     public GameObject decisionUI;// 入境/不入境按鈕群組（Canvas 上的物件）
     public CamSwitchController camController; // 監視器切換 UI
     public TransitionManager transitionManager;
+    public CharacterDefinition currentCharacter;
 
     private HashSet<int> triggeredCamSteps = new(); // 加一個「已執行過的 CAM Index 記錄」，避免同一張圖多次觸發 override。
 
@@ -65,6 +66,8 @@ public class GameFlowController : MonoBehaviour
 
         currentIndex++;
         var ch = characterDB.GetByIndex(currentIndex);
+        currentCharacter = ch;
+
         // ★ 第三位訪客自動 Jumpscare
         if (ch == null)
         {
@@ -78,7 +81,8 @@ public class GameFlowController : MonoBehaviour
         // 顯示身分證（小卡固定、大卡換圖）
         idCardUI.SetCard(ch.idCard);
         if (camController != null)
-            camController.SetCamImages(ch.monitorImages);
+            camController.SetCamImages(ch.monitorImages, ch); //傳入角色物件
+
         // 檢查清單、決策按鈕保持關閉，等玩家操作後再開
         //if (checkListUI != null) checkListUI.SetActive(false);
         if (decisionUI != null) decisionUI.SetActive(false);
@@ -87,9 +91,19 @@ public class GameFlowController : MonoBehaviour
         CamSwitchController cam = FindObjectOfType<CamSwitchController>();
         cam.ForceSwitchTo(0);   // ★ 強制回到 CAM001（index = 0）
 
+        if (currentCharacter.jumpScareSequence != null)
+        {
+            currentCharacter.jumpScareSequence.ResetSequence();
+        }
+
+
         Debug.Log($"StartNext: index={currentIndex}, character={ch?.displayName}, card={(ch?.idCard != null ? "OK" : "NULL")}");
-        if (ch.jumpScareSequence != null)
-            ch.jumpScareSequence.Init();
+        //if (ch.jumpScareSequence != null)
+        //    ch.jumpScareSequence.Init();
+
+        HandleCamChanged(camController.currentCamIndex);
+
+
     }
     public void OnCheckListFinished()
     {
@@ -148,11 +162,28 @@ public class GameFlowController : MonoBehaviour
         if (step.delay > 0)
             yield return new WaitForSeconds(step.delay);
 
-        if (step.silenceAudio)
-            FeedbackSystem.Instance.Mute();
+        //if (step.silenceAudio)
+        //    FeedbackSystem.Instance.Mute();
 
         if (step.overrideImage != null)
-            camController.SetOverrideImage(step.overrideImage);
+        {
+            var currentSprite = camController.camDisplay.sprite;
+            if (currentSprite != step.overrideImage) // 避免重複覆蓋，造成反覆觸發 overlay
+            {
+                camController.SetOverrideImage(step.overrideImage);
+            }
+        }
+
+        if (step.overrideImage != null && step.triggerCamIndex >= 0)
+        {
+            // 只在當前畫面是該 CAM，才進行覆蓋
+            if (camController.currentCamIndex == step.triggerCamIndex)
+            {
+                camController.SetOverrideImage(step.overrideImage);
+                currentCharacter.monitorImages[step.triggerCamIndex] = step.overrideImage; // 覆蓋角色圖，後續切回仍保留
+            }
+        }
+
 
         if (step.feedbackType == FeedbackType.Jumpscare)
         {
@@ -183,9 +214,6 @@ public class GameFlowController : MonoBehaviour
 
         if (ch == null) return;//當流程已結束時，CAM 切換也不會觸發任何錯誤
         if (seq == null) return;
-
-        if (triggeredCamSteps.Contains(camIndex)) return; // 避免重複觸發
-        triggeredCamSteps.Add(camIndex);
 
         seq.TriggerIfMatchCam(camIndex);
 

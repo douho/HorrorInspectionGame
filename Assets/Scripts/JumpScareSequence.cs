@@ -12,7 +12,8 @@ public class JumpScareSequence : ScriptableObject
     public FeedbackStep[] steps;
 
     private bool[] triggeredSteps;
-    private HashSet<int> triggeredCamSteps = new();
+    private HashSet<int> triggeredCamSteps = new HashSet<int>();
+
 
 
     private void Awake()
@@ -22,18 +23,37 @@ public class JumpScareSequence : ScriptableObject
 
     public void TriggerIfMatchCam(int camIndex)
     {
+        Debug.Log($"[JumpScare] 檢查觸發條件：camIndex = {camIndex}, step 數 = {steps.Length}");
+
+        // 防止 ScriptableObject 的 Awake 沒有執行，導致 triggeredSteps 是 null
+        if (triggeredSteps == null || triggeredSteps.Length != steps.Length)
+            triggeredSteps = new bool[steps.Length];
+
         for (int i = 0; i < steps.Length; i++)
         {
             var step = steps[i];
-            if (step.triggerCamIndex != camIndex) continue;
-            if (triggeredCamSteps.Contains(i)) continue;
+            Debug.Log($"[JumpScare] 檢查 step {i}：triggerCamIndex = {step.triggerCamIndex}, 已觸發 = {triggeredSteps[i]}");
 
-            triggeredCamSteps.Add(i); // 標記此步驟已觸發
-            GameFlowController.Instance.StartCoroutine(GameFlowController.Instance.ExecuteStep(step));
+            if (triggeredSteps[i]) continue;
+
+            if (triggerCondition == TriggerCondition.OnCamSwitch && step.triggerCamIndex == camIndex)
+            {
+                triggeredSteps[i] = true;
+                Debug.Log($"[JumpScare] 觸發第 {i} 個步驟，cam = {camIndex}, delay = {step.delay}");
+                GameFlowController.Instance.StartCoroutine(GameFlowController.Instance.ExecuteStep(step));
+            }
         }
     }
 
+
+
+
+
     public void Init()
+    {
+        triggeredCamSteps.Clear();
+    }
+    public void ResetSequence()
     {
         triggeredCamSteps.Clear();
     }

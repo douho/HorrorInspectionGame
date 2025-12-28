@@ -21,28 +21,14 @@ public class CamSwitchController : MonoBehaviour
         btnPrev.onClick.AddListener(() => ChangeCam(-1));
         btnNext.onClick.AddListener(() => ChangeCam(1));
     }
-    public void SetCamImages(Sprite[] images) // 新增：供 GameFlowController 呼叫，設定目前角色的監視器圖片
+    // Assets/Scripts/CamSwitchController.cs
+    public void SetCamImages(Sprite[] images, CharacterDefinition ch)
     {
-        //if(images == null)
-        //{
-        //    Debug.LogError("SetCamImages: images is null");
-        //    return;
-        //}
-        //if(images.Length == 0)
-        //{
-        //    Debug.LogError("SetCamImages: images length is 0");
-        //    return;
-        //}
         camImages = images;
-        //if (camImages == null || camImages.Length == 0)
-        //{
-        //    Debug.LogWarning("SetCamImages 收到空資料", this);
-        //    return;
-        //}
         currentCamIndex = Mathf.Clamp(currentCamIndex, 0, camImages.Length - 1);
-        //Debug.Log($"[CamSwitch] 收到 {camImages.Length} 張，目標Image={camDisplay?.name}", this);
         UpdateCamView();
     }
+
 
 
     // Update is called once per frame
@@ -61,13 +47,16 @@ public class CamSwitchController : MonoBehaviour
     }
     void ChangeCam(int direction)
     {
-        OnCamChanged?.Invoke(currentCamIndex); // 觸發事件，通知監聽者目前的 CAM 索引
         currentCamIndex += direction;
 
         //限制只能在範圍內切換
         currentCamIndex = Mathf.Clamp(currentCamIndex, 0, camImages.Length - 1);
 
         UpdateCamView();
+
+        // 修正後：在切換後再觸發事件
+        OnCamChanged?.Invoke(currentCamIndex); // 觸發事件，通知監聽者目前的 CAM 索引
+
     }
     public void ForceSwitchTo(int index)
     {
