@@ -3678,7 +3678,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u8EAB\u5206\u8B49\u662F\u5426\u904E\u671F"
+  m_text: "\u8EAB\u5206\u8B49\u5C1A\u672A\u904E\u671F"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 04ba708431920174b999966c41fcb723, type: 2}
   m_sharedMaterial: {fileID: -8038422699666834972, guid: 04ba708431920174b999966c41fcb723, type: 2}
@@ -4721,6 +4721,8 @@ MonoBehaviour:
   decisionUI: {fileID: 193940615}
   camController: {fileID: 1110969742}
   transitionManager: {fileID: 378137031}
+  currentCharacter: {fileID: 0}
+  jumpscareController: {fileID: 843707544}
 --- !u!1 &1122680025
 GameObject:
   m_ObjectHideFlags: 0

@@ -56,6 +56,8 @@ public class JumpScareSequence : ScriptableObject
     public void ResetSequence()
     {
         triggeredCamSteps.Clear();
+        if (steps != null)
+        triggeredSteps = new bool[steps.Length]; // 全部重置為 false
     }
 
 

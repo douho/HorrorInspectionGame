@@ -10,14 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 01a3ac9a359a788439c2b7693e096f52, type: 3}
-  m_Name: Ch_02_Vincent_fake
+  m_Name: Tatsumi_fake
   m_EditorClassIdentifier: 
   characterId: 0
   displayName: 
   protrait: {fileID: 0}
-  idCard: {fileID: 11400000, guid: 721d713b09d1e674489bacbf0fccde29, type: 2}
+  idCard: {fileID: 11400000, guid: ce514bba42ab9ff4b8566476219da0a8, type: 2}
   jumpScareSequence: {fileID: 0}
   monitorImages:
-  - {fileID: 21300000, guid: 0f234a084987b5141b03f23e0321d01c, type: 3}
-  - {fileID: 21300000, guid: 99236355dce633d4880b10deca029add, type: 3}
-  - {fileID: 21300000, guid: 3264d5f4854bafa43b2945526c41b5d6, type: 3}
+  - {fileID: 21300000, guid: f26afe29e35ef9d44a13c08d58e47eb8, type: 3}
+  - {fileID: 21300000, guid: 9f86f2f6a9b391f4a9f282434588d0b7, type: 3}
+  - {fileID: 21300000, guid: 57df9bce3c5816f43a3a2d9a3a424897, type: 3}

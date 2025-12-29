@@ -16,8 +16,7 @@ public class GameFlowController : MonoBehaviour
     public CharacterDefinition currentCharacter;
 
     private HashSet<int> triggeredCamSteps = new(); // 加一個「已執行過的 CAM Index 記錄」，避免同一張圖多次觸發 override。
-
-
+    public JumpscareController jumpscareController;
 
     int currentIndex = -1;
 
@@ -80,16 +79,23 @@ public class GameFlowController : MonoBehaviour
 
         // 顯示身分證（小卡固定、大卡換圖）
         idCardUI.SetCard(ch.idCard);
+        //if (camController != null)
+        //    camController.SetCamImages(ch.monitorImages, ch); //傳入角色物件
+
         if (camController != null)
-            camController.SetCamImages(ch.monitorImages, ch); //傳入角色物件
+        {
+            camController.SetCamImages(ch.monitorImages, ch);     // 內部會清 runtimeOverrides + 刷新預設圖
+            camController.ForceSwitchTo(0, invokeEvent: false);   // ★開場回 CAM0，不算一次切鏡頭
+                                                                  // camController.RefreshCurrentCamFromData();          // 若你 SetCamImages 裡已做就不需要
+        }
 
         // 檢查清單、決策按鈕保持關閉，等玩家操作後再開
         //if (checkListUI != null) checkListUI.SetActive(false);
         if (decisionUI != null) decisionUI.SetActive(false);
 
         // 強制監視器回到 CAM001
-        CamSwitchController cam = FindObjectOfType<CamSwitchController>();
-        cam.ForceSwitchTo(0);   // ★ 強制回到 CAM001（index = 0）
+        //CamSwitchController cam = FindObjectOfType<CamSwitchController>();
+        //cam.ForceSwitchTo(0);   // ★ 強制回到 CAM001（index = 0）
 
         if (currentCharacter.jumpScareSequence != null)
         {
@@ -101,7 +107,7 @@ public class GameFlowController : MonoBehaviour
         //if (ch.jumpScareSequence != null)
         //    ch.jumpScareSequence.Init();
 
-        HandleCamChanged(camController.currentCamIndex);
+        //HandleCamChanged(camController.currentCamIndex);
 
 
     }
@@ -159,41 +165,34 @@ public class GameFlowController : MonoBehaviour
 
     public IEnumerator ExecuteStep(FeedbackStep step)
     {
+        Debug.Log($"[ExecuteStep] type={step.feedbackType}, triggerCam={step.triggerCamIndex}, currentCam={camController.currentCamIndex}, img={(step.jumpscareImage ? step.jumpscareImage.name : "NULL")}");
+
         if (step.delay > 0)
             yield return new WaitForSeconds(step.delay);
 
         //if (step.silenceAudio)
         //    FeedbackSystem.Instance.Mute();
 
-        if (step.overrideImage != null)
-        {
-            var currentSprite = camController.camDisplay.sprite;
-            if (currentSprite != step.overrideImage) // 避免重複覆蓋，造成反覆觸發 overlay
-            {
-                camController.SetOverrideImage(step.overrideImage);
-            }
-        }
-
         if (step.overrideImage != null && step.triggerCamIndex >= 0)
         {
-            // 只在當前畫面是該 CAM，才進行覆蓋
-            if (camController.currentCamIndex == step.triggerCamIndex)
-            {
-                camController.SetOverrideImage(step.overrideImage);
-                currentCharacter.monitorImages[step.triggerCamIndex] = step.overrideImage; // 覆蓋角色圖，後續切回仍保留
-            }
+            camController.SetRuntimeOverride(step.triggerCamIndex, step.overrideImage);
         }
-
 
         if (step.feedbackType == FeedbackType.Jumpscare)
         {
-            Debug.Log("jumpscareImage 要播放的是：" + step.jumpscareImage?.name);
-            FindObjectOfType<JumpscareController>()?.TriggerJumpscare(step.jumpscareImage);
+            if (jumpscareController == null)
+            {
+                Debug.LogError("JumpscareController reference is NULL (assign it in Inspector)");
+                yield break;
+            }
+            jumpscareController.TriggerJumpscare(step.jumpscareImage);
         }
         else
         {
             FeedbackSystem.Instance.Trigger(step.feedbackType);
         }
+
+
     }
 
 

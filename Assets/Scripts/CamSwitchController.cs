@@ -13,6 +13,9 @@ public class CamSwitchController : MonoBehaviour
     public int currentCamIndex = 0; // 當前顯示的 CAM 索引，預設為 CAM001
     private Sprite[] camImages; // 三張 CAM 畫面
 
+    private Sprite[] camSprites;  // 你 SetCamImages 傳進來的角色預設圖
+    private readonly Dictionary<int, Sprite> runtimeOverrides = new Dictionary<int, Sprite>();
+
     void Start()
     {
         //UpdateCamView();
@@ -24,9 +27,34 @@ public class CamSwitchController : MonoBehaviour
     // Assets/Scripts/CamSwitchController.cs
     public void SetCamImages(Sprite[] images, CharacterDefinition ch)
     {
-        camImages = images;
-        currentCamIndex = Mathf.Clamp(currentCamIndex, 0, camImages.Length - 1);
-        UpdateCamView();
+        camSprites = images;
+        runtimeOverrides.Clear();          // ★重要：換角色就清掉 override
+        RefreshCurrentCamFromData();       // ★重要：立即刷新顯示成預設圖
+    }
+
+    public void SetRuntimeOverride(int camIndex, Sprite sprite)
+    {
+        if (sprite == null) return;
+        runtimeOverrides[camIndex] = sprite;
+
+        // 如果玩家剛好在這個 CAM，立刻換畫面
+        if (currentCamIndex == camIndex)
+            camDisplay.sprite = sprite;
+    }
+
+    public void ClearRuntimeOverrides()
+    {
+        runtimeOverrides.Clear();
+    }
+
+    public void RefreshCurrentCamFromData()
+    {
+        if (camSprites == null || camSprites.Length == 0) return;
+
+        if (runtimeOverrides.TryGetValue(currentCamIndex, out var s) && s != null)
+            camDisplay.sprite = s;
+        else
+            camDisplay.sprite = camSprites[currentCamIndex];
     }
 
 
@@ -45,33 +73,28 @@ public class CamSwitchController : MonoBehaviour
         else if(Input.GetKeyDown(KeyCode.E))
             ChangeCam(1);
     }
-    void ChangeCam(int direction)
+    public void ChangeCam(int delta)
     {
-        currentCamIndex += direction;
+        if (camSprites == null || camSprites.Length == 0) return;
 
-        //限制只能在範圍內切換
-        currentCamIndex = Mathf.Clamp(currentCamIndex, 0, camImages.Length - 1);
+        currentCamIndex += delta;
+        if (currentCamIndex < 0) currentCamIndex = camSprites.Length - 1;
+        if (currentCamIndex >= camSprites.Length) currentCamIndex = 0;
 
-        UpdateCamView();
-
-        // 修正後：在切換後再觸發事件
-        OnCamChanged?.Invoke(currentCamIndex); // 觸發事件，通知監聽者目前的 CAM 索引
-
-    }
-    public void ForceSwitchTo(int index)
-    {
-        if (camImages == null || camImages.Length == 0)
-        {
-            Debug.LogWarning("ForceSwitchTo() 失敗：camImages 尚未設定");
-            return;
-        }
-
-        currentCamIndex = Mathf.Clamp(index, 0, camImages.Length - 1);
-        UpdateCamView();
-
-        // ★ 強制切換也要觸發 OnCamChanged，否則 Tutorial 的進度會不會跑
+        RefreshCurrentCamFromData();              // ★改這個
         OnCamChanged?.Invoke(currentCamIndex);
     }
+
+    public void ForceSwitchTo(int index, bool invokeEvent = true)
+    {
+        if (camSprites == null || camSprites.Length == 0) return;
+
+        currentCamIndex = Mathf.Clamp(index, 0, camSprites.Length - 1);
+
+        RefreshCurrentCamFromData();              // ★改這個
+        if (invokeEvent) OnCamChanged?.Invoke(currentCamIndex);
+    }
+
 
     //支援覆蓋 CAM 畫面
     public void SetOverrideImage(Sprite overrideSprite) 

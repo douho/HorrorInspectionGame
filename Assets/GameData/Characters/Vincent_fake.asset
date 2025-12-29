@@ -10,13 +10,14 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 01a3ac9a359a788439c2b7693e096f52, type: 3}
-  m_Name: Ch_05_Vera_fake
+  m_Name: Vincent_fake
   m_EditorClassIdentifier: 
   characterId: 0
   displayName: 
   protrait: {fileID: 0}
-  idCard: {fileID: 11400000, guid: e268c465059b78340a6d60b7b14eaa64, type: 2}
+  idCard: {fileID: 11400000, guid: 721d713b09d1e674489bacbf0fccde29, type: 2}
+  jumpScareSequence: {fileID: 0}
   monitorImages:
-  - {fileID: 21300000, guid: 2593c00fc5c7ca44ba398bdd25864bd4, type: 3}
-  - {fileID: 21300000, guid: 576e6b9a938732a4ea8f1ecf03dab426, type: 3}
-  - {fileID: 21300000, guid: ffd9be3a09ba6414db58cd2ab126f5bf, type: 3}
+  - {fileID: 21300000, guid: 0f234a084987b5141b03f23e0321d01c, type: 3}
+  - {fileID: 21300000, guid: 99236355dce633d4880b10deca029add, type: 3}
+  - {fileID: 21300000, guid: 3264d5f4854bafa43b2945526c41b5d6, type: 3}

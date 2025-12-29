@@ -10,14 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 01a3ac9a359a788439c2b7693e096f52, type: 3}
-  m_Name: Ch_03_Tatsumi_fake
+  m_Name: Babara_true
   m_EditorClassIdentifier: 
   characterId: 0
   displayName: 
   protrait: {fileID: 0}
-  idCard: {fileID: 11400000, guid: ce514bba42ab9ff4b8566476219da0a8, type: 2}
-  jumpScareSequence: {fileID: 0}
+  idCard: {fileID: 11400000, guid: b7278085f9622a74a81945b732ad70a2, type: 2}
   monitorImages:
-  - {fileID: 21300000, guid: f26afe29e35ef9d44a13c08d58e47eb8, type: 3}
-  - {fileID: 21300000, guid: 9f86f2f6a9b391f4a9f282434588d0b7, type: 3}
-  - {fileID: 21300000, guid: 57df9bce3c5816f43a3a2d9a3a424897, type: 3}
+  - {fileID: 21300000, guid: 5b515126442cae54cbe3294a654f0972, type: 3}
+  - {fileID: 21300000, guid: a24b44fbeac10a541af49abfd64fc706, type: 3}
+  - {fileID: 21300000, guid: 3b88a92674781d94181de1911c5eb9e3, type: 3}
