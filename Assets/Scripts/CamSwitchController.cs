@@ -81,7 +81,7 @@ public class CamSwitchController : MonoBehaviour
         if (currentCamIndex < 0) currentCamIndex = camSprites.Length - 1;
         if (currentCamIndex >= camSprites.Length) currentCamIndex = 0;
 
-        RefreshCurrentCamFromData();              // ¡¹§ï³o­Ó
+        RefreshCurrentCamFromData();              
         OnCamChanged?.Invoke(currentCamIndex);
     }
 
