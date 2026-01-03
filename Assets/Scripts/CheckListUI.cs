@@ -55,6 +55,18 @@ public class CheckListUI : MonoBehaviour
             decisionUI.SetActive(false);
     }
 
+    public bool[] GetAnswers()
+    {
+        // Q0 身分證尚未過期、Q1 眼睛正常、Q2 牙齒正常
+        bool[] answers = new bool[3];
+
+        answers[0] = questions[0].okToggle.isOn; // 是
+        answers[1] = questions[1].okToggle.isOn;
+        answers[2] = questions[2].okToggle.isOn;
+
+        return answers;
+    }
+
     private void CheckAllCompleted()
     {
         // 用問題陣列檢查每題是否有選擇
@@ -92,12 +104,14 @@ public class CheckListUI : MonoBehaviour
     public void SubmitForm()
     {
         Debug.Log("Submit 按鈕被按下了！");
+
         
         OnSubmitPressed?.Invoke();// 教學事件：讓 TutorialManager 知道 Submit 被按下
 
         gameFlow.OnCheckListFinished();//開啟入境/不入境 UI
         //if (submitBtn != null)
         //    submitBtn.SetActive(false);
+
     }
 
     // 清空表單（每位角色結束後）

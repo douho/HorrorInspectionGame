@@ -7,7 +7,7 @@ public class IDCardDefinition : ScriptableObject
     public Sprite cardSprite; // 整張身分證的圖片（含所有文字資訊）
 
     [Header("Answer Key")] // 評分用的標準答案
-    public bool faceMatches = true; // 身分證大頭貼是否符合臉部
-    public bool expired = false; // 身分證是否過期（true = 已過期）
-
+    public bool isValid;      // 身分證尚未過期
+    public bool eyesNormal;   // 眼睛正常
+    public bool teethNormal;  // 牙齒正常
 }

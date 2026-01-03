@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameFlowController : MonoBehaviour
 {
@@ -10,7 +11,7 @@ public class GameFlowController : MonoBehaviour
 
     [Header("UI")]
     public IDCardUI idCardUI;
-    public GameObject checkListUI;
+    public CheckListUI checkListUI;
     public GameObject decisionUI;
     public CamSwitchController camController;
     public TransitionManager transitionManager;
@@ -27,8 +28,7 @@ public class GameFlowController : MonoBehaviour
     void Start()
     {
         if (decisionUI != null) decisionUI.SetActive(false);
-        var list = checkListUI.GetComponent<CheckListUI>();
-        if (list != null) list.Deactivate();
+        if (checkListUI != null) checkListUI.Deactivate();
 
         StartNext();
     }
@@ -41,11 +41,10 @@ public class GameFlowController : MonoBehaviour
             if (dm != null) dm.HideDialogue();
         }
 
-        var list = checkListUI.GetComponent<CheckListUI>();
-        if (list != null)
+        if (checkListUI != null) 
         {
-            list.ClearCheckList();
-            list.Deactivate();
+            checkListUI.ClearCheckList();
+            checkListUI.Deactivate();
         }
 
         currentIndex++;
@@ -57,6 +56,9 @@ public class GameFlowController : MonoBehaviour
             ShowEnding();
             return;
         }
+
+        if (GameSessionRecorder.Instance != null)
+            GameSessionRecorder.Instance.StartRound(ch);
 
         // 重置序列狀態
         if (ch.jumpScareSequence != null)
@@ -148,21 +150,45 @@ public class GameFlowController : MonoBehaviour
     public void OnCheckListFinished()
     {
         if (decisionUI != null) decisionUI.SetActive(true);
+
+        bool[] answers = checkListUI.GetAnswers();
+
+        IDCardDefinition card = currentCharacter.idCard; // 你的 CharacterDefinition 有 idCard :contentReference[oaicite:1]{index=1}
+
+        bool[] correctness = new bool[3];
+        correctness[0] = (answers[0] == card.isValid);
+        correctness[1] = (answers[1] == card.eyesNormal);
+        correctness[2] = (answers[2] == card.teethNormal);
+
+        // 這裡再丟進 Recorder
+        if (GameSessionRecorder.Instance != null)
+            GameSessionRecorder.Instance.SetChecklist(answers, correctness);
+
     }
+
 
     public void ConfirmDecision(bool approve)
     {
         if (InteractionLock.isLocked) return;
+
+        if (GameSessionRecorder.Instance != null)
+            GameSessionRecorder.Instance.FinalizeDecision(approve);
+
         TutorialManager.Instance.AdvanceFromDecision();
         idCardUI.ClearCard();
-        checkListUI.GetComponent<CheckListUI>().Deactivate();
-        decisionUI.SetActive(false);
+        if (checkListUI != null) checkListUI.Deactivate();
+        if (decisionUI != null) decisionUI.SetActive(false);
+
         StartNext();
     }
 
-    void ShowEnding() { Debug.Log("所有外來者結束"); }
+void ShowEnding()
+{
+    SceneManager.LoadScene("ResultsScene");
+}
 
-    void OnEnable() { CamSwitchController.OnCamChanged += HandleCamChanged; }
+
+void OnEnable() { CamSwitchController.OnCamChanged += HandleCamChanged; }
     void OnDisable() { CamSwitchController.OnCamChanged -= HandleCamChanged; }
 
     void Update()

@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: IDcard_Vera_fake
   m_EditorClassIdentifier: 
   cardSprite: {fileID: 21300000, guid: 942c896cf9e8d0a4b95be27e6c239c8c, type: 3}
-  faceMatches: 0
-  expired: 1
+  isValid: 0
+  eyesNormal: 0
+  teethNormal: 0

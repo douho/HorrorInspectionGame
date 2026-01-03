@@ -7,6 +7,7 @@ public class CharacterDefinition : ScriptableObject
     public string displayName;
     public Sprite protrait; // 角色的頭像，可留空
     public IDCardDefinition idCard; // 角色對應的身分證
+    public bool shouldAllow; // 這個角色正確答案：應入境？
 
     public JumpScareSequence jumpScareSequence;
 
