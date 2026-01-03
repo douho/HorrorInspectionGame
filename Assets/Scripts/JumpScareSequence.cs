@@ -1,6 +1,4 @@
-// Assets/Scripts/Data/JumpScareSequence.cs
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public enum TriggerCondition { OnCamSwitch, OnDecision }
@@ -11,57 +9,41 @@ public class JumpScareSequence : ScriptableObject
     public TriggerCondition triggerCondition;
     public FeedbackStep[] steps;
 
+    // 用來記錄哪些步驟已經執行過，避免重複觸發
     private bool[] triggeredSteps;
-    private HashSet<int> triggeredCamSteps = new HashSet<int>();
 
-
-
-    private void Awake()
+    public void ResetSequence()
     {
-        triggeredSteps = new bool[steps.Length];
+        if (steps != null)
+            triggeredSteps = new bool[steps.Length];
     }
 
     public void TriggerIfMatchCam(int camIndex)
     {
-        Debug.Log($"[JumpScare] 檢查觸發條件：camIndex = {camIndex}, step 數 = {steps.Length}");
+        if (steps == null || steps.Length == 0) return;
 
-        // 防止 ScriptableObject 的 Awake 沒有執行，導致 triggeredSteps 是 null
+        // 安全檢查，確保陣列已初始化
         if (triggeredSteps == null || triggeredSteps.Length != steps.Length)
             triggeredSteps = new bool[steps.Length];
 
         for (int i = 0; i < steps.Length; i++)
         {
-            var step = steps[i];
-            Debug.Log($"[JumpScare] 檢查 step {i}：triggerCamIndex = {step.triggerCamIndex}, 已觸發 = {triggeredSteps[i]}");
-
+            // 如果該步驟已經跑過了，直接跳過
             if (triggeredSteps[i]) continue;
 
+            var step = steps[i];
+
+            // 檢查條件：必須是相機觸發模式，且相機編號符合
             if (triggerCondition == TriggerCondition.OnCamSwitch && step.triggerCamIndex == camIndex)
             {
-                triggeredSteps[i] = true;
-                Debug.Log($"[JumpScare] 觸發第 {i} 個步驟，cam = {camIndex}, delay = {step.delay}");
+                triggeredSteps[i] = true; // 標記為已觸發
+                Debug.Log($"[JumpScare] 觸發第 {i} 步，目標相機: {camIndex}");
+
+                // 透過 GameFlowController 執行該步驟（含 delay）
                 GameFlowController.Instance.StartCoroutine(GameFlowController.Instance.ExecuteStep(step));
             }
         }
     }
-
-
-
-
-
-    public void Init()
-    {
-        triggeredCamSteps.Clear();
-    }
-    public void ResetSequence()
-    {
-        triggeredCamSteps.Clear();
-        if (steps != null)
-        triggeredSteps = new bool[steps.Length]; // 全部重置為 false
-    }
-
-
-
 }
 
 [System.Serializable]
@@ -69,15 +51,8 @@ public struct FeedbackStep
 {
     public FeedbackType feedbackType;
     public float delay;
-
-    // 可選欄位
-    public int triggerCamIndex;      // -1 代表不指定（若指定，代表切到該 CAM 才執行）
-    public bool silenceAudio;        // true = 停止音效與音樂
-    public Sprite overrideImage;     // 若有，強制覆蓋該 CAM 畫面（例如黑圖）
-
-    public Sprite jumpscareImage; // 給 FeedbackType.Jumpscare 用（大驚嚇）
-
+    public int triggerCamIndex;      // 指定觸發的相機 (0, 1, 2...)
+    public bool silenceAudio;
+    public Sprite overrideImage;     // 監視器畫面覆蓋
+    public Sprite jumpscareImage;    // 大圖 Jumpscare
 }
-
-
-

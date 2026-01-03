@@ -5,35 +5,18 @@ using UnityEngine;
 public class GameFlowController : MonoBehaviour
 {
     [Header("Data")]
-    public CharacterDatabase characterDB; // 角色資料庫（把 ScriptableObject 拖進來）
-
-    [Header("UI")]
-    public IDCardUI idCardUI;// 身分證 UI（Canvas 裡的 IDCardUI）
-    public GameObject checkListUI;// 檢查清單（Canvas 上的物件）
-    public GameObject decisionUI;// 入境/不入境按鈕群組（Canvas 上的物件）
-    public CamSwitchController camController; // 監視器切換 UI
-    public TransitionManager transitionManager;
+    public CharacterDatabase characterDB;
     public CharacterDefinition currentCharacter;
 
-    private HashSet<int> triggeredCamSteps = new(); // 加一個「已執行過的 CAM Index 記錄」，避免同一張圖多次觸發 override。
+    [Header("UI")]
+    public IDCardUI idCardUI;
+    public GameObject checkListUI;
+    public GameObject decisionUI;
+    public CamSwitchController camController;
+    public TransitionManager transitionManager;
     public JumpscareController jumpscareController;
 
-    int currentIndex = -1;
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        // 遊戲開始，只關閉「放大檢視」按鈕關掉
-        decisionUI.SetActive(false);
-
-        //通知 CheckListUI 自己收起
-        var list = checkListUI.GetComponent<CheckListUI>();
-        if (list != null)
-        {
-            list.Deactivate(); // 關閉放大版
-        }
-        StartNext();
-    }
+    private int currentIndex = -1;
     public static GameFlowController Instance;
 
     private void Awake()
@@ -41,189 +24,149 @@ public class GameFlowController : MonoBehaviour
         Instance = this;
     }
 
-    /// <summary>
-    /// 換下一位外來者
-    /// </summary>
+    void Start()
+    {
+        if (decisionUI != null) decisionUI.SetActive(false);
+        var list = checkListUI.GetComponent<CheckListUI>();
+        if (list != null) list.Deactivate();
+
+        StartNext();
+    }
+
     public void StartNext()
     {
-        triggeredCamSteps.Clear();//清除 triggeredCamSteps： 新角色開始時，重置已觸發的 CAM 步驟記錄。
-
         if (TutorialManager.TutorialFinished)
         {
-            // 正式遊戲 → 清空對話框，並停用 DialogueManager
-            if (FindObjectOfType<DialogueManager>() != null)
-                FindObjectOfType<DialogueManager>().HideDialogue();
+            var dm = FindObjectOfType<DialogueManager>();
+            if (dm != null) dm.HideDialogue();
         }
 
-        // ★ 先把上一位的清單重置
         var list = checkListUI.GetComponent<CheckListUI>();
         if (list != null)
         {
-            list.ClearCheckList();   // 清掉勾選
-            list.Deactivate();       // 關閉放大清單與決策UI
+            list.ClearCheckList();
+            list.Deactivate();
         }
 
         currentIndex++;
         var ch = characterDB.GetByIndex(currentIndex);
         currentCharacter = ch;
 
-        // ★ 第三位訪客自動 Jumpscare
         if (ch == null)
         {
             ShowEnding();
             return;
         }
 
-        // 取代原本寫死的第三位訪客 Jumpscare
-        TryTriggerJumpScare(ch, TriggerCondition.OnCamSwitch);
+        // 重置序列狀態
+        if (ch.jumpScareSequence != null)
+        {
+            ch.jumpScareSequence.ResetSequence();
+        }
 
-        // 顯示身分證（小卡固定、大卡換圖）
         idCardUI.SetCard(ch.idCard);
-        //if (camController != null)
-        //    camController.SetCamImages(ch.monitorImages, ch); //傳入角色物件
 
         if (camController != null)
         {
-            camController.SetCamImages(ch.monitorImages, ch);     // 內部會清 runtimeOverrides + 刷新預設圖
-            camController.ForceSwitchTo(0, invokeEvent: false);   // ★開場回 CAM0，不算一次切鏡頭
-                                                                  // camController.RefreshCurrentCamFromData();          // 若你 SetCamImages 裡已做就不需要
+            camController.SetCamImages(ch.monitorImages, ch);
+            // ★ 關鍵修正：將 invokeEvent 改為 true。
+            // 這樣開場切換到 CAM 0 時，會立刻觸發 HandleCamChanged，
+            // 讓設定在 CAM 0 的 Jumpscare 可以第一時間執行。
+            camController.ForceSwitchTo(0, invokeEvent: true);
         }
 
-        // 檢查清單、決策按鈕保持關閉，等玩家操作後再開
-        //if (checkListUI != null) checkListUI.SetActive(false);
         if (decisionUI != null) decisionUI.SetActive(false);
-
-        // 強制監視器回到 CAM001
-        //CamSwitchController cam = FindObjectOfType<CamSwitchController>();
-        //cam.ForceSwitchTo(0);   // ★ 強制回到 CAM001（index = 0）
-
-        if (currentCharacter.jumpScareSequence != null)
-        {
-            currentCharacter.jumpScareSequence.ResetSequence();
-        }
-
-
-        Debug.Log($"StartNext: index={currentIndex}, character={ch?.displayName}, card={(ch?.idCard != null ? "OK" : "NULL")}");
-        //if (ch.jumpScareSequence != null)
-        //    ch.jumpScareSequence.Init();
-
-        //HandleCamChanged(camController.currentCamIndex);
-
-
     }
-    public void OnCheckListFinished()
+
+    // 當相機切換時觸發（包含開場的那一次）
+    void HandleCamChanged(int camIndex)
     {
-        decisionUI.SetActive(true);
+        if (currentCharacter == null || currentCharacter.jumpScareSequence == null) return;
+
+        // 讓 Sequence 自己去檢查有沒有符合當前相機的步驟
+        currentCharacter.jumpScareSequence.TriggerIfMatchCam(camIndex);
     }
+
+    // Assets/Scripts/GameFlowController.cs 中的 ExecuteStep 部分
 
     /// <summary>
-    /// 玩家選擇入境 / 不入境
+    /// 執行單一 Jumpscare/回饋步驟：包含延遲、閃爍致盲、圖片切換與環境覆蓋
     /// </summary>
-    public void ConfirmDecision(bool approve)
-    {
-        //if (TutorialManager.currentStep < 8) return;
-        if (InteractionLock.isLocked) return;
-
-        var ch = characterDB.GetByIndex(currentIndex);
-
-        // 真實答案：faceMatches=true 且 expired=false 才合法
-        bool legal = ch.idCard.faceMatches && !ch.idCard.expired;
-        bool correct = (approve == legal);
-
-        Debug.Log($"Decision: {(approve ? "Approve" : "Deny")} | Correct = {correct}");
-
-        TutorialManager.Instance.AdvanceFromDecision();    // ★ 教學進入 Step9（新增）
-
-        // 收尾
-        idCardUI.ClearCard();
-        checkListUI.GetComponent<CheckListUI>().Deactivate(); // 關閉檢查清單
-        decisionUI.SetActive(false);
-
-        StartNext();// 下一位
-    }
-
-    void ShowEnding()
-    {
-        Debug.Log("所有外來者結束 → 顯示結局");
-    }
-    private void TryTriggerJumpScare(CharacterDefinition ch, TriggerCondition condition)
-    {
-        if (ch.jumpScareSequence != null && ch.jumpScareSequence.triggerCondition == condition)
-        {
-            StartCoroutine(ExecuteJumpScare(ch.jumpScareSequence));
-        }
-    }
-
-    private System.Collections.IEnumerator ExecuteJumpScare(JumpScareSequence seq)
-    {
-        foreach (var step in seq.steps)
-        {
-            yield return new WaitForSeconds(step.delay);
-            FeedbackSystem.Instance.Trigger(step.feedbackType);
-        }
-    }
-
     public IEnumerator ExecuteStep(FeedbackStep step)
     {
-        Debug.Log($"[ExecuteStep] type={step.feedbackType}, triggerCam={step.triggerCamIndex}, currentCam={camController.currentCamIndex}, img={(step.jumpscareImage ? step.jumpscareImage.name : "NULL")}");
-
+        // 1. 執行基礎延遲（ScriptableObject 中設定的 Delay）
         if (step.delay > 0)
-            yield return new WaitForSeconds(step.delay);
-
-        //if (step.silenceAudio)
-        //    FeedbackSystem.Instance.Mute();
-
-        if (step.overrideImage != null && step.triggerCamIndex >= 0)
         {
-            camController.SetRuntimeOverride(step.triggerCamIndex, step.overrideImage);
+            yield return new WaitForSeconds(step.delay);
         }
 
+        // 2. 處理回饋演出邏輯
         if (step.feedbackType == FeedbackType.Jumpscare)
         {
-            if (jumpscareController == null)
+            // ★ 第一步：先觸發閃爍與音效
+            // 這會啟動 FeedbackSystem 的 FlashRoutine，將螢幕填滿白色
+            if (FeedbackSystem.Instance != null)
             {
-                Debug.LogError("JumpscareController reference is NULL (assign it in Inspector)");
-                yield break;
+                FeedbackSystem.Instance.Trigger(FeedbackType.Jumpscare);
             }
-            jumpscareController.TriggerJumpscare(step.jumpscareImage);
+
+            // ★ 第二步：致盲等待 (Blinding Wait)
+            // 等待 0.08 秒，這時玩家螢幕剛好是最亮的白光
+            // 在白光遮蔽下切換圖片，玩家不會看到生硬的變換過程
+            yield return new WaitForSeconds(0.08f);
+
+            // ★ 第三步：顯示嚇人大圖
+            if (jumpscareController != null)
+            {
+                jumpscareController.TriggerJumpscare(step.jumpscareImage);
+            }
         }
         else
         {
-            FeedbackSystem.Instance.Trigger(step.feedbackType);
+            // 處理非 Jumpscare 的一般回饋（如警告紅閃、輕微震動等）
+            if (FeedbackSystem.Instance != null)
+            {
+                FeedbackSystem.Instance.Trigger(step.feedbackType);
+            }
         }
 
+        // 3. 處理監視器畫面的 Override (覆蓋環境圖，例如螢幕突然變黑或出現鬼影)
+        // 這部分邏輯獨立於 Jumpscare 大圖，會改變監視器本身的 Sprite
+        if (step.overrideImage != null && step.triggerCamIndex >= 0)
+        {
+            // 記錄到 CamController 的 RuntimeOverrides 字典中，確保切換回來時圖還在
+            camController.SetRuntimeOverride(step.triggerCamIndex, step.overrideImage);
 
+            // 如果現在正在看的正是這台監視器，立刻手動更新畫面
+            if (camController.currentCamIndex == step.triggerCamIndex)
+            {
+                camController.SetOverrideImage(step.overrideImage);
+            }
+        }
     }
 
-
-
-    void OnEnable()
+    public void OnCheckListFinished()
     {
-        CamSwitchController.OnCamChanged += HandleCamChanged;
+        if (decisionUI != null) decisionUI.SetActive(true);
     }
-    void OnDisable()
+
+    public void ConfirmDecision(bool approve)
     {
-        CamSwitchController.OnCamChanged -= HandleCamChanged;
+        if (InteractionLock.isLocked) return;
+        TutorialManager.Instance.AdvanceFromDecision();
+        idCardUI.ClearCard();
+        checkListUI.GetComponent<CheckListUI>().Deactivate();
+        decisionUI.SetActive(false);
+        StartNext();
     }
 
-    void HandleCamChanged(int camIndex)
-    {
-        var ch = characterDB.GetByIndex(currentIndex);
-        var seq = ch.jumpScareSequence;
+    void ShowEnding() { Debug.Log("所有外來者結束"); }
 
-        if (ch == null) return;//當流程已結束時，CAM 切換也不會觸發任何錯誤
-        if (seq == null) return;
+    void OnEnable() { CamSwitchController.OnCamChanged += HandleCamChanged; }
+    void OnDisable() { CamSwitchController.OnCamChanged -= HandleCamChanged; }
 
-        seq.TriggerIfMatchCam(camIndex);
-
-    }
-
-    // Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyDown(KeyCode.N))
-        {
-            StartNext();
-        }
+        if (Input.GetKeyDown(KeyCode.N)) StartNext();
     }
 }
