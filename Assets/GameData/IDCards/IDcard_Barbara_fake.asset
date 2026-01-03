@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34c7cb919fe21884f983ebcf94e9f895, type: 3}
   m_Name: IDcard_Barbara_fake
   m_EditorClassIdentifier: 
-  cardSprite: {fileID: 21300000, guid: 7db4e4a1e2c9ea0498cae8233d1a2ef2, type: 3}
-  faceMatches: 1
+  cardSprite: {fileID: 21300000, guid: 5047ed17960033c4e9472be74310885a, type: 3}
+  faceMatches: 0
   expired: 1

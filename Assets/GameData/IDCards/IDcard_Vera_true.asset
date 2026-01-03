@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 34c7cb919fe21884f983ebcf94e9f895, type: 3}
   m_Name: IDcard_Vera_true
   m_EditorClassIdentifier: 
-  cardSprite: {fileID: 21300000, guid: 942c896cf9e8d0a4b95be27e6c239c8c, type: 3}
-  faceMatches: 0
-  expired: 1
+  cardSprite: {fileID: 21300000, guid: fab6db8b19e21804c95faabc8ca90b2d, type: 3}
+  faceMatches: 1
+  expired: 0
