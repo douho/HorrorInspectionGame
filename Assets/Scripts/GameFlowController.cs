@@ -171,6 +171,7 @@ public class GameFlowController : MonoBehaviour
     {
         if (InteractionLock.isLocked) return;
 
+        // ★新增：記錄這一輪的入境/不入境與是否正確
         if (GameSessionRecorder.Instance != null)
             GameSessionRecorder.Instance.FinalizeDecision(approve);
 
@@ -182,7 +183,8 @@ public class GameFlowController : MonoBehaviour
         StartNext();
     }
 
-void ShowEnding()
+
+    void ShowEnding()
 {
     SceneManager.LoadScene("ResultsScene");
 }
