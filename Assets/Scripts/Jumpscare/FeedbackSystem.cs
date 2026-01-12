@@ -80,6 +80,7 @@ public class FeedbackSystem : MonoBehaviour
             case FeedbackType.Jumpscare:
                 PlayFlash(Color.white); // ±j¨î¥Õ°{
                 PlaySound(jumpscareClip);
+                PlayRumble(0.6f, 1.0f, 0.25f);
                 break;
         }
     }
