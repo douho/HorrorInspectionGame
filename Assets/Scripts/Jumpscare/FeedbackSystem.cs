@@ -23,6 +23,46 @@ public class FeedbackSystem : MonoBehaviour
     public AudioSource audioSource;
     public AudioClip jumpscareClip;
 
+    Coroutine rumbleCo;
+
+    void PlayRumble(float lowFreq, float highFreq, float duration)
+    {
+        // 只在 High 版震動：FeedbackLevel == 2
+        if (FeedbackLevel < 2) return;
+
+        var pad = Gamepad.current;
+        if (pad == null) return;
+
+        // 停掉前一次震動，避免疊加失控
+        if (rumbleCo != null) StopCoroutine(rumbleCo);
+        rumbleCo = StartCoroutine(RumbleRoutine(pad, lowFreq, highFreq, duration));
+    }
+
+    IEnumerator RumbleRoutine(Gamepad pad, float low, float high, float duration)
+    {
+        pad.SetMotorSpeeds(low, high);
+        yield return new WaitForSeconds(duration);
+        pad.SetMotorSpeeds(0f, 0f);
+        rumbleCo = null;
+    }
+
+    void StopRumble()
+    {
+        var pad = Gamepad.current;
+        if (pad != null) pad.SetMotorSpeeds(0f, 0f);
+
+        if (rumbleCo != null)
+        {
+            StopCoroutine(rumbleCo);
+            rumbleCo = null;
+        }
+    }
+
+    // 建議加在 OnDisable / OnDestroy，避免切場景後還在震
+    private void OnDisable() => StopRumble();
+    private void OnDestroy() => StopRumble();
+
+
     private void Awake()
     {
         Instance = this;

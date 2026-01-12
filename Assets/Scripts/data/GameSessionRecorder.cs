@@ -48,6 +48,14 @@ public class GameSessionRecorder : MonoBehaviour
         sessionId = Guid.NewGuid().ToString();
         buildVersion = Application.version;
     }
+    public void ResetSession()
+    {
+        records.Clear();
+        current = null;
+        roundStartTime = 0f;
+
+        sessionId = Guid.NewGuid().ToString();
+    }
 
     public void StartRound(CharacterDefinition ch)
     {

@@ -23,6 +23,16 @@ public class MainMenuController : MonoBehaviour
     {
         // ★ 重點：直接設定 FeedbackSystem 的靜態變數
         FeedbackSystem.FeedbackLevel = level;
+        var r = GameSessionRecorder.Instance;
+        if (r != null)
+        {
+            r.feedbackCondition =
+                (level == 0) ? FeedbackCondition.Low :
+                (level == 1) ? FeedbackCondition.Mid :
+                               FeedbackCondition.High;
+
+            r.ResetSession();
+        }
 
         // 載入教學 / 主遊戲 Scene 名字（目前是 Tutorial）
         SceneManager.LoadScene("Tutorial");
