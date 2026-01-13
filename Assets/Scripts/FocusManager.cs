@@ -1,5 +1,7 @@
 using UnityEngine;
 using static System.Runtime.CompilerServices.RuntimeHelpers;
+using UnityEngine.InputSystem;
+
 
 public class FocusManager : MonoBehaviour
 {
@@ -12,6 +14,9 @@ public class FocusManager : MonoBehaviour
 
     private enum FocusTarget { IDcard, CheckList }
     private FocusTarget currentFocus = FocusTarget.IDcard;
+    private bool stickXUsed = false;
+
+
     void Awake()
     {
         Instance = this;
@@ -35,6 +40,27 @@ public class FocusManager : MonoBehaviour
             SwitchFocus(-1);
         else if (Input.GetKeyDown(KeyCode.D) || Input.GetKeyDown(KeyCode.RightArrow))
             SwitchFocus(1);
+
+        var pad = Gamepad.current;
+        if (pad != null)
+        {
+            // D-pad：不用鎖
+            if (pad.dpad.left.wasPressedThisFrame) SwitchFocus(-1);
+            else if (pad.dpad.right.wasPressedThisFrame) SwitchFocus(1);
+
+            // 左蘑菇頭：要方向鎖
+            float x = pad.leftStick.x.ReadValue();
+
+            if (!stickXUsed)
+            {
+                if (x < -0.6f) { SwitchFocus(-1); stickXUsed = true; }
+                else if (x > 0.6f) { SwitchFocus(1); stickXUsed = true; }
+            }
+
+            // 放回中間才解鎖
+            if (Mathf.Abs(x) < 0.2f) stickXUsed = false;
+        }
+
     }
 
     void SwitchFocus(int dir) //dir:方向鍵direction 的簡稱

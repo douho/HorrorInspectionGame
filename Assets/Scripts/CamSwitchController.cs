@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
+
 
 public class CamSwitchController : MonoBehaviour
 {
@@ -71,6 +73,14 @@ public class CamSwitchController : MonoBehaviour
             ChangeCam(-1);
         else if(Input.GetKeyDown(KeyCode.E))
             ChangeCam(1);
+
+        var pad = Gamepad.current;
+        if (pad != null)
+        {
+            if (pad.leftShoulder.wasPressedThisFrame) ChangeCam(-1);   // L1
+            else if (pad.rightShoulder.wasPressedThisFrame) ChangeCam(1); // R1
+        }
+
     }
     public void ChangeCam(int delta)
     {

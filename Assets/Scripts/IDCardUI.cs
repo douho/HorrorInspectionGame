@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class IDCardUI : MonoBehaviour
@@ -106,14 +107,14 @@ public class IDCardUI : MonoBehaviour
         if (!isFocused) return;
 
         // 空白鍵 / 搖桿 A：打開大卡
-        if (!isOpen && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.JoystickButton0)))
+        if (!isOpen && (Input.GetKeyDown(KeyCode.Space) || (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame)))
         {
             Debug.Log("空白鍵被按下 → 嘗試打開大卡");
             Activate();
         }
 
         // R 鍵 / 搖桿 B：關閉大卡
-        if (isOpen && (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.JoystickButton1)))
+        if (isOpen && (Input.GetKeyDown(KeyCode.Escape) || (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame)))
         {
             Debug.Log("R 鍵被按下 → 嘗試關閉大卡");
             Deactivate();

@@ -3,6 +3,8 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 using static CheckListUI;
+using UnityEngine.InputSystem;
+
 
 public class CheckListUI : MonoBehaviour
 {
@@ -23,6 +25,19 @@ public class CheckListUI : MonoBehaviour
 
     private bool isOpen; // 清單是否打開
 
+    // === Gamepad 導覽狀態（Checklist 模式）===
+    private int qIndex = 0;          // 目前第幾題 (0~2)
+    private int colIndex = 0;        // 0=是(okToggle) / 1=否(badToggle)
+
+    // 蘑菇頭方向鎖（避免連發）
+    private bool stickXUsed = false;
+    private bool stickYUsed = false;
+
+    // 可調門檻
+    private const float StickPressThreshold = 0.6f;
+    private const float StickReleaseThreshold = 0.2f;
+
+
     void Awake()
     {
         openViewRoot.SetActive(false);
@@ -42,6 +57,15 @@ public class CheckListUI : MonoBehaviour
         openViewRoot.SetActive(true);
         isOpen = true;
 
+        // 進入 checklist 模式：鎖桌面 A/D 切換
+        FocusManager.FocusLock = true;
+
+        // 重置導覽狀態
+        qIndex = 0;
+        colIndex = 0;
+        stickXUsed = false;
+        stickYUsed = false;
+
         OnChecklistOpen?.Invoke();
     }
 
@@ -53,6 +77,9 @@ public class CheckListUI : MonoBehaviour
         // 一起關閉入境/不入境 UI
         if (decisionUI != null)
             decisionUI.SetActive(false);
+
+        FocusManager.FocusLock = false;
+
     }
 
     public bool[] GetAnswers()
@@ -84,10 +111,74 @@ public class CheckListUI : MonoBehaviour
 
         if (InteractionLock.isLocked) return;
         if (!isFocused) return;
-        if (!isOpen && (Input.GetKeyDown(KeyCode.Space)))
+        if (!isOpen && (Input.GetKeyDown(KeyCode.Space) || (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame)))
             Activate();
-        if (isOpen && (Input.GetKeyDown(KeyCode.Escape)))
+        if (isOpen && (Input.GetKeyDown(KeyCode.Escape) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame)))
+        {
             Deactivate();
+            HandleChecklistGamepadNavigation();
+        }
+    }
+    private void HandleChecklistGamepadNavigation()
+    {
+        var pad = Gamepad.current;
+        if (pad == null) return;
+
+        // --- 1) 上下：換題目（D-pad 直接用 pressedThisFrame；蘑菇頭用方向鎖）---
+        if (pad.dpad.up.wasPressedThisFrame) MoveQuestion(-1);
+        else if (pad.dpad.down.wasPressedThisFrame) MoveQuestion(1);
+
+        float y = pad.leftStick.y.ReadValue();
+        if (!stickYUsed)
+        {
+            if (y > StickPressThreshold) { MoveQuestion(-1); stickYUsed = true; }
+            else if (y < -StickPressThreshold) { MoveQuestion(1); stickYUsed = true; }
+        }
+        if (Mathf.Abs(y) < StickReleaseThreshold) stickYUsed = false;
+
+        // --- 2) 左右：切換 是/否 ---
+        if (pad.dpad.left.wasPressedThisFrame) MoveColumn(-1);
+        else if (pad.dpad.right.wasPressedThisFrame) MoveColumn(1);
+
+        float x = pad.leftStick.x.ReadValue();
+        if (!stickXUsed)
+        {
+            if (x < -StickPressThreshold) { MoveColumn(-1); stickXUsed = true; }
+            else if (x > StickPressThreshold) { MoveColumn(1); stickXUsed = true; }
+        }
+        if (Mathf.Abs(x) < StickReleaseThreshold) stickXUsed = false;
+
+        // --- 3) ○ 確認：把目前格子打勾（Toggle 互斥你已 WireExclusive 會處理）---
+        if (pad.buttonEast.wasPressedThisFrame)
+        {
+            var q = questions[qIndex];
+            if (colIndex == 0) q.okToggle.isOn = true;   // 是
+            else q.badToggle.isOn = true;                // 否
+        }
+
+        // --- 4) 如果三題都填完，允許 ○ 直接 Submit（不用再用滑鼠點按鈕）---
+        bool allAnswered = questions.All(qq => qq.HasAnswer);
+        if (allAnswered && submitBtn != null && submitBtn.activeSelf)
+        {
+            // 你也可以改成「按一次○先把 submit 高亮，再按一次○送出」
+            // 這裡先用最簡單：allAnswered 時再按一次 ○ 就送出
+            if (pad.buttonEast.wasPressedThisFrame)
+            {
+                SubmitForm();
+            }
+        }
+    }
+
+    private void MoveQuestion(int delta)
+    {
+        qIndex = Mathf.Clamp(qIndex + delta, 0, questions.Length - 1);
+        // 你如果有要做「小 focusRing」可以從這裡更新位置
+    }
+
+    private void MoveColumn(int delta)
+    {
+        colIndex = (colIndex + delta) < 0 ? 1 : (colIndex + delta) > 1 ? 0 : (colIndex + delta);
+        // 你如果有要做「小 focusRing」可以從這裡更新位置
     }
 
     // Toggle 更新時檢查是否全填

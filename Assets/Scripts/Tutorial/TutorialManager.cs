@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
+
 
 public class TutorialManager : MonoBehaviour
 {
@@ -103,7 +105,7 @@ public class TutorialManager : MonoBehaviour
         InteractionLock.isLocked = false;
 
         dialogueManager.MoveToBottom();
-        dialogueManager.ShowDialogue("很好，再請切回第一個畫面。");
+        dialogueManager.ShowDialogue("很好，再請切到下一個畫面。");
         dialogueManager.nextKeyHint.SetActive(false);
     }
 
@@ -113,8 +115,8 @@ public class TutorialManager : MonoBehaviour
 
         dialogueManager.MoveToBottom();
         dialogueManager.ShowDialogue(
-            "另外在檢查時，除了眼睛，也請注意牙齒是否「過度潔白整齊」\n" +
-            "接著會進入清單檢查教學。"
+            "除了眼睛，也請注意牙齒是否「過度潔白整齊」\n" +
+            "接著會進入清單檢查教學，請切回第一個畫面。"
         );
 
         dialogueManager.nextKeyHint.SetActive(true);
@@ -256,7 +258,7 @@ public class TutorialManager : MonoBehaviour
         // 教學步驟的空白鍵
         if (!TutorialFinished && dialogueManager.nextKeyHint.activeSelf)
         {
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Space) || (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame))
             {
                 step++;
                 GoToStep(step);
@@ -269,7 +271,7 @@ public class TutorialManager : MonoBehaviour
         // ★ 最後等待玩家按空白鍵結束教學
         if (waitingForTutorialEnd)
         {
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (Input.GetKeyDown(KeyCode.Space) || (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame))
             {
                 dialogueManager.HideDialogue();
 
