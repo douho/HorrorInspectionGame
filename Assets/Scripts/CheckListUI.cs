@@ -14,7 +14,10 @@ public class CheckListUI : MonoBehaviour
     [Header("UI Reference")]
     public GameObject closedIconRoot; // 桌面上的小圖（清單icon）
     public GameObject openViewRoot; // 放大檢視物件（清單）
-    public GameObject focusRing; // 聚焦框
+    //public GameObject focusRing; // 聚焦框
+    public GameObject focusRingDesk;   // 桌面聚焦框（可選：如果你還要在 checklist icon 上顯示）
+    public GameObject focusRingCheck;  // checklist 導覽用聚焦框（FocusRing_Check）
+
     public GameObject submitBtn; // 提交表單按鈕
     public GameObject decisionUI; // 決策UI
     public GameFlowController gameFlow; // 遊戲流程控制器
@@ -42,14 +45,41 @@ public class CheckListUI : MonoBehaviour
     {
         openViewRoot.SetActive(false);
         closedIconRoot.SetActive(true); // 小圖一直存在
-        if (focusRing != null) focusRing.SetActive(false);
+        if (focusRingCheck != null) focusRingCheck.SetActive(false);
         if (submitBtn != null) submitBtn.SetActive(false);
     }
 
     public void Focus(bool on)
     {
         isFocused = on;
-        focusRing?.SetActive(on);
+
+        // 桌面聚焦框要不要顯示取決於你有沒有用 focusRingDesk
+        if (focusRingDesk != null)
+            focusRingDesk.SetActive(on && !isOpen);
+
+        // checklist ring 只在 checklist 開著時才顯示
+        if (focusRingCheck != null)
+            focusRingCheck.SetActive(on && isOpen);
+    }
+
+
+    private void UpdateFocusRingByCursor()
+    {
+        if (focusRingCheck == null) return;
+        if (questions == null || questions.Length == 0) return;
+
+        var q = questions[Mathf.Clamp(qIndex, 0, questions.Length - 1)];
+        Toggle t = (colIndex == 0) ? q.okToggle : q.badToggle;
+        if (t == null) return;
+
+        var rt = t.GetComponent<RectTransform>();
+        if (rt == null) return;
+
+        // 最穩的方式：直接把 ring 的位置貼到 toggle 上
+        focusRingCheck.transform.position = rt.position;
+                
+        // 如果你覺得 ring 尺寸要跟 toggle 一樣，可加這行（可選）
+        // focusRing.GetComponent<RectTransform>().sizeDelta = rt.sizeDelta;
     }
 
     public void Activate()
@@ -67,6 +97,9 @@ public class CheckListUI : MonoBehaviour
         stickYUsed = false;
 
         OnChecklistOpen?.Invoke();
+        if (focusRingDesk != null) focusRingDesk.SetActive(false);
+        if (focusRingCheck != null) focusRingCheck.SetActive(true);
+        UpdateFocusRingByCursor();
     }
 
     public void Deactivate()
@@ -79,6 +112,9 @@ public class CheckListUI : MonoBehaviour
             decisionUI.SetActive(false);
 
         FocusManager.FocusLock = false;
+        if (focusRingCheck != null) focusRingCheck.SetActive(false);
+        if (focusRingDesk != null) focusRingDesk.SetActive(isFocused); // 回到桌面焦點狀態
+
 
     }
 
@@ -108,16 +144,34 @@ public class CheckListUI : MonoBehaviour
     void Update()
     {
         if (InteractionLock.DialogueLock) return;
-
         if (InteractionLock.isLocked) return;
         if (!isFocused) return;
+
+        // 沒開時按 Space / ○ 打開
         if (!isOpen && (Input.GetKeyDown(KeyCode.Space) || (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame)))
+        {
             Activate();
-        if (isOpen && (Input.GetKeyDown(KeyCode.Escape) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame)))
+            UpdateFocusRingByCursor(); 
+            return;
+        }
+
+        if (!isOpen) return;
+
+        // 開著的時候：每幀都吃導覽
+        HandleChecklistGamepadNavigation();
+
+        // 開著時按 ESC / × 關掉
+        if (Input.GetKeyDown(KeyCode.Escape) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame))
         {
             Deactivate();
-            HandleChecklistGamepadNavigation();
+            return;
         }
+
+        //if (isOpen && (Input.GetKeyDown(KeyCode.Escape) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame)))
+        //{
+        //    Deactivate();
+        //    HandleChecklistGamepadNavigation();
+        //}
     }
     private void HandleChecklistGamepadNavigation()
     {
@@ -148,46 +202,49 @@ public class CheckListUI : MonoBehaviour
         }
         if (Mathf.Abs(x) < StickReleaseThreshold) stickXUsed = false;
 
+        bool allAnswered = questions.All(qq => qq.HasAnswer);
         // --- 3) ○ 確認：把目前格子打勾（Toggle 互斥你已 WireExclusive 會處理）---
         if (pad.buttonEast.wasPressedThisFrame)
         {
-            var q = questions[qIndex];
-            if (colIndex == 0) q.okToggle.isOn = true;   // 是
-            else q.badToggle.isOn = true;                // 否
-        }
+            if (allAnswered && submitBtn != null && submitBtn.activeSelf)
+                SubmitForm();
+            else
+                ApplyAnswerByCursor();
 
+        }
         // --- 4) 如果三題都填完，允許 ○ 直接 Submit（不用再用滑鼠點按鈕）---
-        bool allAnswered = questions.All(qq => qq.HasAnswer);
-        if (allAnswered && submitBtn != null && submitBtn.activeSelf)
-        {
             // 你也可以改成「按一次○先把 submit 高亮，再按一次○送出」
             // 這裡先用最簡單：allAnswered 時再按一次 ○ 就送出
-            if (pad.buttonEast.wasPressedThisFrame)
-            {
-                SubmitForm();
-            }
-        }
     }
 
     private void MoveQuestion(int delta)
     {
         qIndex = Mathf.Clamp(qIndex + delta, 0, questions.Length - 1);
         // 你如果有要做「小 focusRing」可以從這裡更新位置
+        UpdateFocusRingByCursor();
+
     }
 
     private void MoveColumn(int delta)
     {
         colIndex = (colIndex + delta) < 0 ? 1 : (colIndex + delta) > 1 ? 0 : (colIndex + delta);
         // 你如果有要做「小 focusRing」可以從這裡更新位置
+        UpdateFocusRingByCursor();
+
+    }
+
+    private void RefreshSubmitVisibility()
+    {
+        if (submitBtn == null || questions == null) return;
+
+        bool allAnswered = questions.All(q => q.HasAnswer);
+        submitBtn.SetActive(allAnswered);
     }
 
     // Toggle 更新時檢查是否全填
     public void OnQuestionAnswered()
     {
-        bool allAnswered = questions.All(q => q.HasAnswer);
-        if (allAnswered && submitBtn != null)
-            submitBtn.SetActive(true);
-
+        RefreshSubmitVisibility();
         CheckAllCompleted();
     }
 
@@ -221,6 +278,20 @@ public class CheckListUI : MonoBehaviour
         {
             q.WireExclusive(this);
         }
+    }
+    private void ApplyAnswerByCursor()
+    {
+        if (questions == null || questions.Length == 0) return;
+
+        var q = questions[Mathf.Clamp(qIndex, 0, questions.Length - 1)];
+
+        bool chooseYes = (colIndex == 0);
+
+        if (q.okToggle != null) q.okToggle.SetIsOnWithoutNotify(chooseYes);
+        if (q.badToggle != null) q.badToggle.SetIsOnWithoutNotify(!chooseYes);
+
+        // 手動通知一次（讓 submit 的顯示更新）
+        OnQuestionAnswered();
     }
 
     [System.Serializable]
