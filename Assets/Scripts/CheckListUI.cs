@@ -14,9 +14,8 @@ public class CheckListUI : MonoBehaviour
     [Header("UI Reference")]
     public GameObject closedIconRoot; // 桌面上的小圖（清單icon）
     public GameObject openViewRoot; // 放大檢視物件（清單）
-    //public GameObject focusRing; // 聚焦框
-    public GameObject focusRingDesk;   // 桌面聚焦框（可選：如果你還要在 checklist icon 上顯示）
     public GameObject focusRingCheck;  // checklist 導覽用聚焦框（FocusRing_Check）
+    public GameObject focusRingDecision;
 
     public GameObject submitBtn; // 提交表單按鈕
     public GameObject decisionUI; // 決策UI
@@ -40,6 +39,82 @@ public class CheckListUI : MonoBehaviour
     private const float StickPressThreshold = 0.6f;
     private const float StickReleaseThreshold = 0.2f;
 
+    private enum UIMode { Desk, Checklist, Decision }
+    private UIMode mode = UIMode.Desk;
+
+    // Decision 選擇：0=Approve / 1=Deny
+    private int decisionIndex = 0;
+
+    // Decision 用左蘑菇頭方向鎖
+    private bool decisionStickXUsed = false;
+
+    public Button btnApprove;
+    public Button btnDeny;
+    private System.Collections.IEnumerator ReselectDecisionNextFrame()
+    {
+        yield return null; // 等一幀
+        UpdateDecisionHighlight();
+    }
+
+    private void HandleDecisionNavigation()
+    {
+        var pad = Gamepad.current;
+
+        // 左右切換選擇（鍵盤 A/D 也可）
+        bool left = Input.GetKeyDown(KeyCode.A) || (pad != null && pad.dpad.left.wasPressedThisFrame);
+        bool right = Input.GetKeyDown(KeyCode.D) || (pad != null && pad.dpad.right.wasPressedThisFrame);
+
+        // 左蘑菇頭左右（加方向鎖，避免一推就連跳）
+        if (pad != null)
+        {
+            float x = pad.leftStick.x.ReadValue();
+
+            if (!decisionStickXUsed)
+            {
+                if (x < -StickPressThreshold) { left = true; decisionStickXUsed = true; }
+                else if (x > StickPressThreshold) { right = true; decisionStickXUsed = true; }
+            }
+
+            if (Mathf.Abs(x) < StickReleaseThreshold)
+                decisionStickXUsed = false;
+        }
+
+        if (left || right)
+        {
+            decisionIndex = 1 - decisionIndex; // 0<->1
+            UpdateDecisionHighlight();
+        }
+
+        // ○ 確認
+        bool confirm = Input.GetKeyDown(KeyCode.Space) || (pad != null && pad.buttonEast.wasPressedThisFrame);
+        if (confirm)
+        {
+            if (decisionIndex == 0) btnApprove.onClick.Invoke();
+            else btnDeny.onClick.Invoke();
+        }
+
+        // × 返回 Checklist（如果你想允許）
+        bool back = Input.GetKeyDown(KeyCode.Escape) || (pad != null && pad.buttonSouth.wasPressedThisFrame);
+        if (back)
+        {
+            if (focusRingDecision != null)
+                focusRingDecision.SetActive(false);
+
+            // 回到 checklist 模式，不關 checklist
+            mode = UIMode.Checklist;
+            UpdateFocusRingByCursor();
+            if (focusRingCheck != null) focusRingCheck.SetActive(true);
+        }
+    }
+
+    private void UpdateDecisionHighlight()
+    {
+        // 最快：用 Unity 的選取高亮（Button 需要有 Navigation/Transition）
+        if (decisionIndex == 0) btnApprove.Select();
+        else btnDeny.Select();
+        UpdateDecisionRing();
+    }
+
 
     void Awake()
     {
@@ -53,14 +128,11 @@ public class CheckListUI : MonoBehaviour
     {
         isFocused = on;
 
-        // 桌面聚焦框要不要顯示取決於你有沒有用 focusRingDesk
-        if (focusRingDesk != null)
-            focusRingDesk.SetActive(on && !isOpen);
-
         // checklist ring 只在 checklist 開著時才顯示
         if (focusRingCheck != null)
             focusRingCheck.SetActive(on && isOpen);
     }
+
 
 
     private void UpdateFocusRingByCursor()
@@ -81,6 +153,18 @@ public class CheckListUI : MonoBehaviour
         // 如果你覺得 ring 尺寸要跟 toggle 一樣，可加這行（可選）
         // focusRing.GetComponent<RectTransform>().sizeDelta = rt.sizeDelta;
     }
+    private void UpdateDecisionRing()
+    {
+        if (focusRingDecision == null) return;
+
+        var target = (decisionIndex == 0) ? btnApprove : btnDeny;
+        if (target == null) return;
+
+        var rt = target.GetComponent<RectTransform>();
+        if (rt == null) return;
+
+        focusRingDecision.transform.position = rt.position;
+    }
 
     public void Activate()
     {
@@ -97,9 +181,9 @@ public class CheckListUI : MonoBehaviour
         stickYUsed = false;
 
         OnChecklistOpen?.Invoke();
-        if (focusRingDesk != null) focusRingDesk.SetActive(false);
         if (focusRingCheck != null) focusRingCheck.SetActive(true);
         UpdateFocusRingByCursor();
+        mode = UIMode.Checklist;
     }
 
     public void Deactivate()
@@ -113,9 +197,8 @@ public class CheckListUI : MonoBehaviour
 
         FocusManager.FocusLock = false;
         if (focusRingCheck != null) focusRingCheck.SetActive(false);
-        if (focusRingDesk != null) focusRingDesk.SetActive(isFocused); // 回到桌面焦點狀態
 
-
+        mode = UIMode.Desk;
     }
 
     public bool[] GetAnswers()
@@ -157,8 +240,14 @@ public class CheckListUI : MonoBehaviour
 
         if (!isOpen) return;
 
-        // 開著的時候：每幀都吃導覽
-        HandleChecklistGamepadNavigation();
+        if (mode == UIMode.Checklist)
+        {
+            HandleChecklistGamepadNavigation();
+        }
+        else if (mode == UIMode.Decision)
+        {
+            HandleDecisionNavigation();
+        }
 
         // 開著時按 ESC / × 關掉
         if (Input.GetKeyDown(KeyCode.Escape) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame))
@@ -259,6 +348,16 @@ public class CheckListUI : MonoBehaviour
         gameFlow.OnCheckListFinished();//開啟入境/不入境 UI
         //if (submitBtn != null)
         //    submitBtn.SetActive(false);
+
+        mode = UIMode.Decision;
+        decisionIndex = 0;
+
+        // 如果你想：Decision 出現時，先不要讓 checklist ring 還停在 toggle 上
+        if (focusRingCheck != null) focusRingCheck.SetActive(false);
+
+        if (focusRingDecision != null) focusRingDecision.SetActive(true);
+        UpdateDecisionHighlight();
+        StartCoroutine(ReselectDecisionNextFrame());
 
     }
 
