@@ -32,7 +32,7 @@ public class FocusManager : MonoBehaviour
     {
         if (InteractionLock.DialogueLock) return;
 
-        if (InteractionLock.isLocked) return; //鎖定中不進行焦點切換
+        if (InteractionLock.GlobalLock) return; //鎖定中不進行焦點切換
         if (FocusLock) return;               // ★ 教學要求鎖住 A/D 時就不切換
 
         //左右方向鍵切換焦點

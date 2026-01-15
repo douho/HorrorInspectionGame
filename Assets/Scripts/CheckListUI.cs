@@ -14,6 +14,8 @@ public class CheckListUI : MonoBehaviour
     [Header("UI Reference")]
     public GameObject closedIconRoot; // 桌面上的小圖（清單icon）
     public GameObject openViewRoot; // 放大檢視物件（清單）
+
+    public GameObject focusRingDesk; // 桌面 icon 用的 FocusRing_Desk
     public GameObject focusRingCheck;  // checklist 導覽用聚焦框（FocusRing_Check）
     public GameObject focusRingDecision;
 
@@ -120,6 +122,7 @@ public class CheckListUI : MonoBehaviour
     {
         openViewRoot.SetActive(false);
         closedIconRoot.SetActive(true); // 小圖一直存在
+        if (focusRingDesk != null) focusRingDesk.SetActive(false);  
         if (focusRingCheck != null) focusRingCheck.SetActive(false);
         if (submitBtn != null) submitBtn.SetActive(false);
     }
@@ -127,6 +130,10 @@ public class CheckListUI : MonoBehaviour
     public void Focus(bool on)
     {
         isFocused = on;
+
+        // 桌面 icon ring：只有在「沒打開清單」時顯示
+        if (focusRingDesk != null)
+            focusRingDesk.SetActive(on && !isOpen);
 
         // checklist ring 只在 checklist 開著時才顯示
         if (focusRingCheck != null)
@@ -181,7 +188,10 @@ public class CheckListUI : MonoBehaviour
         stickYUsed = false;
 
         OnChecklistOpen?.Invoke();
+
+        if (focusRingDesk != null) focusRingDesk.SetActive(false);
         if (focusRingCheck != null) focusRingCheck.SetActive(true);
+
         UpdateFocusRingByCursor();
         mode = UIMode.Checklist;
     }
@@ -197,7 +207,7 @@ public class CheckListUI : MonoBehaviour
 
         FocusManager.FocusLock = false;
         if (focusRingCheck != null) focusRingCheck.SetActive(false);
-
+        if (focusRingDesk != null) focusRingDesk.SetActive(isFocused); // 回到桌面時如果仍聚焦就亮
         mode = UIMode.Desk;
     }
 
@@ -227,7 +237,7 @@ public class CheckListUI : MonoBehaviour
     void Update()
     {
         if (InteractionLock.DialogueLock) return;
-        if (InteractionLock.isLocked) return;
+        if (InteractionLock.GlobalLock) return;
         if (!isFocused) return;
 
         // 沒開時按 Space / ○ 打開

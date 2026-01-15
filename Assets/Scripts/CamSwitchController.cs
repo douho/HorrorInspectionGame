@@ -64,10 +64,9 @@ public class CamSwitchController : MonoBehaviour
     void Update()
     {
         if (InteractionLock.DialogueLock) return;
+        if (InteractionLock.GlobalLock) return;
+        if (InteractionLock.CameraLock) return;
 
-        if (InteractionLock.isLocked) return;
-        //if (TutorialManager.currentStep == 6) return;
-        
         //¤ä´©Áä½L¤è¦VÁä¤Á´«
         if (Input.GetKeyDown(KeyCode.Q))
             ChangeCam(-1);

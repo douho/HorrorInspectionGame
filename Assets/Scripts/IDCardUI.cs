@@ -102,7 +102,7 @@ public class IDCardUI : MonoBehaviour
     {
         if (InteractionLock.DialogueLock) return;
 
-        if (InteractionLock.isLocked) return;
+        if (InteractionLock.GlobalLock) return;
         //if(TutorialManager.currentStep == 6) return; // 教學模式第 6 步鎖住身分證操作
         if (!isFocused) return;
 
@@ -114,7 +114,7 @@ public class IDCardUI : MonoBehaviour
         }
 
         // R 鍵 / 搖桿 B：關閉大卡
-        if (isOpen && (Input.GetKeyDown(KeyCode.Escape) || (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame)))
+        if (isOpen && (Input.GetKeyDown(KeyCode.Escape) || (Gamepad.current != null && Gamepad.current.buttonSouth.wasPressedThisFrame)))
         {
             Debug.Log("R 鍵被按下 → 嘗試關閉大卡");
             Deactivate();

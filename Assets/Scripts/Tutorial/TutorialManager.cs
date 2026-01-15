@@ -59,7 +59,7 @@ public class TutorialManager : MonoBehaviour
 
     private void Step0_Welecome()
     {
-        InteractionLock.isLocked = true;
+        InteractionLock.GlobalLock = true;
         FocusManager.FocusLock = true;
 
         dialogueManager.MoveToBottom();
@@ -70,7 +70,7 @@ public class TutorialManager : MonoBehaviour
     {
         FocusManager.Instance?.ResetFocus();
 
-        InteractionLock.isLocked = false;
+        InteractionLock.GlobalLock = false;
         FocusManager.FocusLock = true;
 
         FocusManager.Instance?.ResetFocus();
@@ -82,7 +82,7 @@ public class TutorialManager : MonoBehaviour
 
     private void Step2_CheckID()
     {
-        InteractionLock.isLocked = false;
+        InteractionLock.GlobalLock = false;
         FocusManager.FocusLock = true;
 
         dialogueManager.MoveToBottom();
@@ -92,7 +92,7 @@ public class TutorialManager : MonoBehaviour
 
     private void Step3_GoToCam002()
     {
-        InteractionLock.isLocked = false;
+        InteractionLock.GlobalLock = false;
         FocusManager.FocusLock = false;
 
         dialogueManager.MoveToBottom();
@@ -102,7 +102,7 @@ public class TutorialManager : MonoBehaviour
 
     private void Step4_ReturnCam001()
     {
-        InteractionLock.isLocked = false;
+        InteractionLock.GlobalLock = false;
 
         dialogueManager.MoveToBottom();
         dialogueManager.ShowDialogue("很好，再請切到下一個畫面。");
@@ -111,7 +111,10 @@ public class TutorialManager : MonoBehaviour
 
     private void Step5_TeethHint()
     {
-        InteractionLock.isLocked = true;
+        //InteractionLock.GlobalLock = false;
+        InteractionLock.GlobalLock = false;
+        InteractionLock.CameraLock = false;
+
 
         dialogueManager.MoveToBottom();
         dialogueManager.ShowDialogue(
@@ -119,12 +122,13 @@ public class TutorialManager : MonoBehaviour
             "接著會進入清單檢查教學，請切回第一個畫面。"
         );
 
-        dialogueManager.nextKeyHint.SetActive(true);
+        // ★關鍵：Step5 不允許用空白鍵前進，避免空白鍵被拿去開 checklist 時偷跳 step
+        dialogueManager.nextKeyHint.SetActive(false);
     }
 
     private void Step6_OpenChecklist()
     {
-        InteractionLock.isLocked = false;
+        InteractionLock.GlobalLock = false;
 
         dialogueManager.MoveToBottom();
         dialogueManager.ShowDialogue("請用 A/D 切換到 Checklist 並按空白鍵開啟。");
@@ -134,9 +138,9 @@ public class TutorialManager : MonoBehaviour
 
     private void Step7_ChecklistTick()
     {
-        Debug.Log("Step7 Lock = " + InteractionLock.isLocked + ", DialogueLock = " + InteractionLock.DialogueLock);
+        Debug.Log("Step7 Lock = " + InteractionLock.GlobalLock + ", DialogueLock = " + InteractionLock.DialogueLock);
 
-        InteractionLock.isLocked = false;
+        InteractionLock.GlobalLock = false;
 
         dialogueManager.MoveToBottom();
         dialogueManager.ShowDialogue("請將所有檢查項目勾選完成。");
@@ -146,7 +150,7 @@ public class TutorialManager : MonoBehaviour
 
     private void Step8_SendDecision()
     {
-        InteractionLock.isLocked = false;
+        InteractionLock.GlobalLock = false;
 
         dialogueManager.MoveToBottom();
         dialogueManager.ShowDialogue(
@@ -159,7 +163,7 @@ public class TutorialManager : MonoBehaviour
 
     private void Step9_EndTutorial()
     {
-        InteractionLock.isLocked = true;
+        InteractionLock.GlobalLock = true;
         FocusManager.FocusLock = true;
 
         dialogueManager.MoveToBottom();
@@ -275,7 +279,7 @@ public class TutorialManager : MonoBehaviour
             {
                 dialogueManager.HideDialogue();
 
-                InteractionLock.isLocked = false;
+                InteractionLock.GlobalLock = false;
                 InteractionLock.DialogueLock = false;
                 FocusManager.FocusLock = false;
 

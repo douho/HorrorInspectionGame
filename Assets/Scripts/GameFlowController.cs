@@ -169,7 +169,7 @@ public class GameFlowController : MonoBehaviour
 
     public void ConfirmDecision(bool approve)
     {
-        if (InteractionLock.isLocked) return;
+        if (InteractionLock.GlobalLock) return;
 
         // ★新增：記錄這一輪的入境/不入境與是否正確
         if (GameSessionRecorder.Instance != null)

@@ -1240,7 +1240,7 @@ MonoBehaviour:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.34591186, g: 0.34591186, b: 0.34591186, a: 1}
     m_PressedColor: {r: 0.4339623, g: 0.4339623, b: 0.4339623, a: 1}
-    m_SelectedColor: {r: 0.17610055, g: 0.17610055, b: 0.17610055, a: 1}
+    m_SelectedColor: {r: 0.5294118, g: 0.5294118, b: 0.5294118, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 2
     m_FadeDuration: 0.1
@@ -2958,6 +2958,7 @@ GameObject:
   - component: {fileID: 700869025}
   - component: {fileID: 700869024}
   - component: {fileID: 700869026}
+  - component: {fileID: 700869027}
   m_Layer: 5
   m_Name: btnPrev
   m_TagString: Untagged
@@ -3045,7 +3046,7 @@ MonoBehaviour:
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
+    m_PressedColor: {r: 0.84705883, g: 0.84705883, b: 0.84705883, a: 1}
     m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 1
@@ -3066,6 +3067,18 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!225 &700869027
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 700869022}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &702095221
 GameObject:
   m_ObjectHideFlags: 0
@@ -3315,6 +3328,7 @@ GameObject:
   - component: {fileID: 804641591}
   - component: {fileID: 804641590}
   - component: {fileID: 804641589}
+  - component: {fileID: 804641593}
   m_Layer: 5
   m_Name: btnNext
   m_TagString: Untagged
@@ -3423,6 +3437,18 @@ RectTransform:
   m_AnchoredPosition: {x: 400, y: 120}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!225 &804641593
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 804641588}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &814637645
 GameObject:
   m_ObjectHideFlags: 0
@@ -3521,7 +3547,7 @@ MonoBehaviour:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 0.34591186, g: 0.34591186, b: 0.34591186, a: 1}
     m_PressedColor: {r: 0.4339623, g: 0.4339623, b: 0.4339623, a: 1}
-    m_SelectedColor: {r: 0.17610055, g: 0.17610055, b: 0.17610055, a: 1}
+    m_SelectedColor: {r: 0.5283019, g: 0.5283019, b: 0.5283019, a: 1}
     m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
     m_ColorMultiplier: 2
     m_FadeDuration: 0.1
@@ -4815,6 +4841,7 @@ GameObject:
   - component: {fileID: 1110969741}
   - component: {fileID: 1110969742}
   - component: {fileID: 1110969743}
+  - component: {fileID: 1110969744}
   m_Layer: 0
   m_Name: GameController
   m_TagString: Untagged
@@ -4873,6 +4900,25 @@ MonoBehaviour:
   camController: {fileID: 1110969742}
   transitionManager: {fileID: 378137031}
   jumpscareController: {fileID: 843707544}
+--- !u!114 &1110969744
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1110969740}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74268d69196eb594c8946e48439b1ea6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  leftArrow: {fileID: 700869023}
+  rightArrow: {fileID: 804641592}
+  leftCanvasGroup: {fileID: 700869027}
+  rightCanvasGroup: {fileID: 804641593}
+  pressedScale: 0.9
+  lerpSpeed: 18
+  pressedAlpha: 0.8
 --- !u!1 &1122680025
 GameObject:
   m_ObjectHideFlags: 0
@@ -7331,8 +7377,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   closedIconRoot: {fileID: 2098945896}
   openViewRoot: {fileID: 1278490072}
+  focusRingDesk: {fileID: 712291239}
   focusRingCheck: {fileID: 273594906}
-  focusRingDecision: {fileID: 0}
+  focusRingDecision: {fileID: 66565077}
   submitBtn: {fileID: 856075542}
   decisionUI: {fileID: 193940615}
   gameFlow: {fileID: 1110969743}
