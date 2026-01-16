@@ -17,6 +17,20 @@ public class CamSwitchController : MonoBehaviour
     private Sprite[] camSprites;  // 你 SetCamImages 傳進來的角色預設圖
     private readonly Dictionary<int, Sprite> runtimeOverrides = new Dictionary<int, Sprite>();
 
+    int GetNextIndexRight(int cur)
+    {
+        if (cur == 0) return 1;
+        if (cur == 1) return 2;
+        return 2; // cur==2 -> stay
+    }
+
+    int GetNextIndexLeft(int cur)
+    {
+        if (cur == 2) return 1;
+        if (cur == 1) return 0;
+        return 0; // cur==0 -> stay
+    }
+
     void Start()
     {
         //UpdateCamView();
@@ -31,6 +45,7 @@ public class CamSwitchController : MonoBehaviour
         camSprites = images;
         runtimeOverrides.Clear();          // ★重要：換角色就清掉 override
         RefreshCurrentCamFromData();       // ★重要：立即刷新顯示成預設圖
+        UpdateArrowButtons();
     }
 
     public void SetRuntimeOverride(int camIndex, Sprite sprite)
@@ -85,12 +100,29 @@ public class CamSwitchController : MonoBehaviour
     {
         if (camSprites == null || camSprites.Length == 0) return;
 
-        currentCamIndex += delta;
-        if (currentCamIndex < 0) currentCamIndex = camSprites.Length - 1;
-        if (currentCamIndex >= camSprites.Length) currentCamIndex = 0;
+        int next = currentCamIndex;
 
-        RefreshCurrentCamFromData();              
+        if (delta > 0)
+            next = GetNextIndexRight(currentCamIndex);
+        else if (delta < 0)
+            next = GetNextIndexLeft(currentCamIndex);
+
+        // 如果 next 沒變，代表這個方向不允許（例如 CAM001 往左、CAM003 往右）
+        if (next == currentCamIndex) return;
+
+        currentCamIndex = next;
+
+        RefreshCurrentCamFromData();
+        UpdateArrowButtons();
         OnCamChanged?.Invoke(currentCamIndex);
+    }
+    void UpdateArrowButtons()
+    {
+        if (btnPrev != null)
+            btnPrev.gameObject.SetActive(currentCamIndex > 0);
+
+        if (btnNext != null)
+            btnNext.gameObject.SetActive(currentCamIndex < camSprites.Length - 1);
     }
 
     public void ForceSwitchTo(int index, bool invokeEvent = true)
@@ -99,7 +131,8 @@ public class CamSwitchController : MonoBehaviour
 
         currentCamIndex = Mathf.Clamp(index, 0, camSprites.Length - 1);
 
-        RefreshCurrentCamFromData();              // ★改這個
+        RefreshCurrentCamFromData();
+        UpdateArrowButtons();
         if (invokeEvent) OnCamChanged?.Invoke(currentCamIndex);
     }
 

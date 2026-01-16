@@ -48,7 +48,7 @@ public class TutorialManager : MonoBehaviour
             case 1: Step1_OpenID(); break;
             case 2: Step2_CheckID(); break;
             case 3: Step3_GoToCam002(); break;
-            case 4: Step4_ReturnCam001(); break;
+            case 4: Step4_GoToCam003(); break;
             case 5: Step5_TeethHint(); break;
             case 6: Step6_OpenChecklist(); break;
             case 7: Step7_ChecklistTick(); break;
@@ -100,7 +100,7 @@ public class TutorialManager : MonoBehaviour
         dialogueManager.nextKeyHint.SetActive(false);
     }
 
-    private void Step4_ReturnCam001()
+    private void Step4_GoToCam003()
     {
         InteractionLock.GlobalLock = false;
 
@@ -174,6 +174,7 @@ public class TutorialManager : MonoBehaviour
         );
 
         waitingForTutorialEnd = true;
+        InteractionLock.GlobalLock = true;
     }
 
     private void OnEnable()
@@ -214,15 +215,28 @@ public class TutorialManager : MonoBehaviour
 
     private void HandleCamChanged(int camIndex)
     {
+        // step3: 切到 CAM002 (1)
         if (step == 3 && camIndex == 1)
         {
             step = 4;
             GoToStep(step);
+            return;
         }
-        else if (step == 4 && camIndex == 0)
+
+        // step4: 必須切到 CAM003 (2)
+        if (step == 4 && camIndex == 2)
         {
             step = 5;
             GoToStep(step);
+            return;
+        }
+
+        // step5: 必須切回 CAM001 (0)
+        if (step == 5 && camIndex == 0)
+        {
+            step = 6;
+            GoToStep(step);
+            return;
         }
     }
 
@@ -269,48 +283,59 @@ public class TutorialManager : MonoBehaviour
             }
         }
 
-        if (!TutorialFinished)
-            CheckCameraProgress();
+        //if (!TutorialFinished)
+        //    CheckCameraProgress();
 
         // ★ 最後等待玩家按空白鍵結束教學
         if (waitingForTutorialEnd)
         {
             if (Input.GetKeyDown(KeyCode.Space) || (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame))
             {
+                // 先鎖住，避免同一顆鍵被 Checklist 同幀吃掉
+                InteractionLock.GlobalLock = true;
+
                 dialogueManager.HideDialogue();
 
-                InteractionLock.GlobalLock = false;
                 InteractionLock.DialogueLock = false;
                 FocusManager.FocusLock = false;
 
                 TutorialFinished = true;
-
-                gameObject.SetActive(false); // ★ 完全關閉教學
                 waitingForTutorialEnd = false;
+
+                StartCoroutine(EndTutorialRoutine());
             }
         }
-    }
 
-    private void CheckCameraProgress()
+    }
+    private System.Collections.IEnumerator EndTutorialRoutine()
     {
-        if (camController == null) return;
-
-        int camIndex = camController.currentCamIndex;
-
-        if (step == 3 && camIndex == 1)
-        {
-            step++;
-            GoToStep(step);
-        }
-        else if (step == 4 && camIndex == 2)
-        {
-            step++;
-            GoToStep(step);
-        }
-        else if (step == 5 && camIndex == 0)
-        {
-            step++;
-            GoToStep(step);
-        }
+        yield return null;                 // 等一幀，讓結束鍵不會同幀觸發 Checklist
+        InteractionLock.GlobalLock = false; // 解鎖，恢復操作
+        gameObject.SetActive(false);        // 最後再關掉 Tutorial
     }
+
+
+
+    //private void CheckCameraProgress()
+    //{
+    //    if (camController == null) return;
+
+    //    int camIndex = camController.currentCamIndex;
+
+    //    if (step == 3 && camIndex == 1)
+    //    {
+    //        step++;
+    //        GoToStep(step);
+    //    }
+    //    else if (step == 4 && camIndex == 2)
+    //    {
+    //        step++;
+    //        GoToStep(step);
+    //    }
+    //    else if (step == 5 && camIndex == 0)
+    //    {
+    //        step++;
+    //        GoToStep(step);
+    //    }
+    //}
 }

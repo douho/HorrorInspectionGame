@@ -5,9 +5,11 @@ using System.Collections;
 public class TransitionManager : MonoBehaviour
 {
     public CanvasGroup transitionCanvas;   // 過場黑幕或過場圖片
-
+    public bool IsTransitioning { get; private set; } = false; 
     public IEnumerator PlayTransition()
     {
+        IsTransitioning = true;
+
         transitionCanvas.gameObject.SetActive(true);
 
         // ★ Fade In（畫面變黑或顯示過場圖）
@@ -30,5 +32,7 @@ public class TransitionManager : MonoBehaviour
         transitionCanvas.alpha = 0f;
 
         transitionCanvas.gameObject.SetActive(false);
+
+        IsTransitioning = false;
     }
 }

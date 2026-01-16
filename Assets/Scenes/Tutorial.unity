@@ -4842,6 +4842,7 @@ GameObject:
   - component: {fileID: 1110969742}
   - component: {fileID: 1110969743}
   - component: {fileID: 1110969744}
+  - component: {fileID: 1110969745}
   m_Layer: 0
   m_Name: GameController
   m_TagString: Untagged
@@ -4919,6 +4920,22 @@ MonoBehaviour:
   pressedScale: 0.9
   lerpSpeed: 18
   pressedAlpha: 0.8
+--- !u!114 &1110969745
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1110969740}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d565af33670bff542b5f704aea3f9e6b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameFlow: {fileID: 1110969743}
+  cam: {fileID: 1110969742}
+  transition: {fileID: 378137031}
+  camTriggerDebounce: 0.05
 --- !u!1 &1122680025
 GameObject:
   m_ObjectHideFlags: 0

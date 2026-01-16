@@ -81,13 +81,13 @@ public class GameFlowController : MonoBehaviour
     }
 
     // 當相機切換時觸發（包含開場的那一次）
-    void HandleCamChanged(int camIndex)
-    {
-        if (currentCharacter == null || currentCharacter.jumpScareSequence == null) return;
+    //void HandleCamChanged(int camIndex)
+    //{
+    //    if (currentCharacter == null || currentCharacter.jumpScareSequence == null) return;
 
-        // 讓 Sequence 自己去檢查有沒有符合當前相機的步驟
-        currentCharacter.jumpScareSequence.TriggerIfMatchCam(camIndex);
-    }
+    //    // 讓 Sequence 自己去檢查有沒有符合當前相機的步驟
+    //    currentCharacter.jumpScareSequence.TriggerIfMatchCam(camIndex);
+    //}
 
     // Assets/Scripts/GameFlowController.cs 中的 ExecuteStep 部分
 
@@ -190,8 +190,8 @@ public class GameFlowController : MonoBehaviour
 }
 
 
-void OnEnable() { CamSwitchController.OnCamChanged += HandleCamChanged; }
-    void OnDisable() { CamSwitchController.OnCamChanged -= HandleCamChanged; }
+//void OnEnable() { CamSwitchController.OnCamChanged += HandleCamChanged; }
+//    void OnDisable() { CamSwitchController.OnCamChanged -= HandleCamChanged; }
 
     void Update()
     {
