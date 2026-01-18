@@ -7,7 +7,8 @@ public enum FeedbackType
 {
     Jumpscare,
     Warning,
-    LightShake
+    LightShake,
+    Flicker
 }
 
 public class FeedbackSystem : MonoBehaviour
@@ -22,6 +23,12 @@ public class FeedbackSystem : MonoBehaviour
     [Header("音效")]
     public AudioSource audioSource;
     public AudioClip jumpscareClip;
+
+    [Header("Flicker（輕微驚嚇）")]
+    public Color flickerColor = Color.white;   // 你也可以改成偏白偏灰
+    public float flickerDuration = 0.12f;      // 比 jumpscare 短
+    public AudioClip flickerClip;
+
 
     Coroutine rumbleCo;
 
@@ -81,6 +88,17 @@ public class FeedbackSystem : MonoBehaviour
                 PlayFlash(Color.white); // 強制白閃
                 PlaySound(jumpscareClip);
                 PlayRumble(0.6f, 1.0f, 0.25f);
+                break;
+
+            case FeedbackType.Flicker:
+                flashDuration = flickerDuration;
+                PlayFlash(flickerColor);
+
+                // 依版本播放音效：你 PlaySound 本來就會在 FeedbackLevel < 1 時擋掉
+                PlaySound(flickerClip);
+
+                // Flicker 通常不震，但你要也可以
+                // PlayRumble(0.2f, 0.4f, 0.08f);
                 break;
         }
     }
