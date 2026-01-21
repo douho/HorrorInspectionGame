@@ -29,71 +29,104 @@ public class GameFlowController : MonoBehaviour
     {
         if (decisionUI != null) decisionUI.SetActive(false);
         if (checkListUI != null) checkListUI.Deactivate();
-
         StartNext();
     }
 
-    public void StartNext()
+    private Coroutine startNextCo;
+
+    private IEnumerator StartNextRoutine()
     {
+        // 避免重複呼叫
+        if (startNextCo != null) yield break;
+        startNextCo = StartCoroutine(_StartNextRoutine());
+        yield return startNextCo;
+        startNextCo = null;
+    }
+
+    private IEnumerator _StartNextRoutine()
+    {
+        if (camController != null)
+        {
+            camController.ClearRuntimeOverrides();
+            camController.ForceSwitchTo(0, invokeEvent: false);
+
+            // ★ 關鍵：立刻指定一張「空畫面 / 黑畫面」
+            camController.camDisplay.sprite = null;
+        }
+        // 1) 鎖住一切操作
+        InteractionLock.GlobalLock = true;
+        InteractionLock.CameraLock = true;
+        FocusManager.FocusLock = true;
+
+        // 2) 播過場（如果你有接 TransitionManager）
+        if (transitionManager != null)
+        {
+            yield return StartCoroutine(transitionManager.PlayTransition());
+        }
+        else
+        {
+            // 沒有 transition 也給一幀，避免輸入同幀穿透
+            yield return null;
+        }
+
+        // 3) 清理 UI（你原本的）
         if (TutorialManager.TutorialFinished)
         {
             var dm = FindObjectOfType<DialogueManager>();
             if (dm != null) dm.HideDialogue();
         }
 
-        if (checkListUI != null) 
+        if (checkListUI != null)
         {
             checkListUI.ClearCheckList();
             checkListUI.Deactivate();
         }
+        if (decisionUI != null) decisionUI.SetActive(false);
 
+        // 4) 換角色
         currentIndex++;
         var ch = characterDB.GetByIndex(currentIndex);
         currentCharacter = ch;
 
         if (ch == null)
         {
+            // 結束場景前解鎖避免卡住（雖然會換場景）
+            InteractionLock.GlobalLock = false;
+            InteractionLock.CameraLock = false;
+            FocusManager.FocusLock = false;
+
             ShowEnding();
-            return;
+            yield break;
         }
 
         if (GameSessionRecorder.Instance != null)
             GameSessionRecorder.Instance.StartRound(ch);
 
-        // 重置序列狀態
         if (ch.jumpScareSequence != null)
-        {
             ch.jumpScareSequence.ResetSequence();
-        }
 
-        idCardUI.SetCard(ch.idCard);
+        if (idCardUI != null)
+            idCardUI.SetCard(ch.idCard);
 
         if (camController != null)
         {
             camController.SetCamImages(ch.monitorImages, ch);
-            // ★ 關鍵修正：將 invokeEvent 改為 true。
-            // 這樣開場切換到 CAM 0 時，會立刻觸發 HandleCamChanged，
-            // 讓設定在 CAM 0 的 Jumpscare 可以第一時間執行。
+
+            // ★關鍵：過場結束後才觸發 CAM001，讓 D 的 delay 從這裡開始算
             camController.ForceSwitchTo(0, invokeEvent: true);
         }
 
-        if (decisionUI != null) decisionUI.SetActive(false);
+        // 5) 解鎖
+        InteractionLock.GlobalLock = false;
+        InteractionLock.CameraLock = false;
+        FocusManager.FocusLock = false;
     }
 
-    // 當相機切換時觸發（包含開場的那一次）
-    //void HandleCamChanged(int camIndex)
-    //{
-    //    if (currentCharacter == null || currentCharacter.jumpScareSequence == null) return;
+    public void StartNext()
+    {
+        StartCoroutine(StartNextRoutine());
+    }
 
-    //    // 讓 Sequence 自己去檢查有沒有符合當前相機的步驟
-    //    currentCharacter.jumpScareSequence.TriggerIfMatchCam(camIndex);
-    //}
-
-    // Assets/Scripts/GameFlowController.cs 中的 ExecuteStep 部分
-
-    /// <summary>
-    /// 執行單一 Jumpscare/回饋步驟：包含延遲、閃爍致盲、圖片切換與環境覆蓋
-    /// </summary>
     public IEnumerator ExecuteStep(FeedbackStep step)
     {
         // 1. 執行基礎延遲（ScriptableObject 中設定的 Delay）
