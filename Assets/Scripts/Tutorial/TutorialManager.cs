@@ -163,6 +163,13 @@ public class TutorialManager : MonoBehaviour
 
     private void Step9_EndTutorial()
     {
+        // 只在最後一步，把手冊提示亮起
+        if (FocusManager.Instance != null && FocusManager.Instance.manualUI != null)
+        {
+            FocusManager.Instance.manualUI.SetHintGlow(true);
+        }
+
+        InteractionLock.DialogueLock = true;
         InteractionLock.GlobalLock = true;
         FocusManager.FocusLock = true;
 
@@ -174,7 +181,7 @@ public class TutorialManager : MonoBehaviour
         );
 
         waitingForTutorialEnd = true;
-        InteractionLock.GlobalLock = true;
+        //InteractionLock.GlobalLock = true;
     }
 
     private void OnEnable()
@@ -291,18 +298,26 @@ public class TutorialManager : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Space) || (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame))
             {
-                // 先鎖住，避免同一顆鍵被 Checklist 同幀吃掉
-                InteractionLock.GlobalLock = true;
+                //// 先鎖住，避免同一顆鍵被 Checklist 同幀吃掉
+                //InteractionLock.GlobalLock = true;
 
                 dialogueManager.HideDialogue();
 
+                // 把手冊提示燈熄掉（避免一直亮）
+                if (FocusManager.Instance != null && FocusManager.Instance.manualUI != null)
+                    FocusManager.Instance.manualUI.SetHintGlow(false);
+                TutorialFinished = true;
+
+                // 解鎖
+                InteractionLock.GlobalLock = false;
                 InteractionLock.DialogueLock = false;
                 FocusManager.FocusLock = false;
 
-                TutorialFinished = true;
+
+                gameObject.SetActive(false);
                 waitingForTutorialEnd = false;
 
-                StartCoroutine(EndTutorialRoutine());
+                //StartCoroutine(EndTutorialRoutine());
             }
         }
 

@@ -13,7 +13,7 @@ public class FocusManager : MonoBehaviour
     public CheckListUI checkListUI;
     public ManualUI manualUI;
 
-    private enum FocusTarget { IDcard, CheckList }
+    private enum FocusTarget { IDcard, CheckList, Manual }
     private FocusTarget currentFocus = FocusTarget.IDcard;
     private bool stickXUsed = false;
 
@@ -66,7 +66,7 @@ public class FocusManager : MonoBehaviour
 
     void SwitchFocus(int dir) //dir:方向鍵direction 的簡稱
     {
-        int next = ((int)currentFocus + dir +2 ) % 2;
+        int next = ((int)currentFocus + dir +3 ) % 3;
         SetFocus((FocusTarget)next);
     }
     
@@ -77,6 +77,8 @@ public class FocusManager : MonoBehaviour
         //呼叫每個 UI 的 Focus() 來顯示外框
         idCardUI.Focus(currentFocus == FocusTarget.IDcard);
         checkListUI.Focus(currentFocus == FocusTarget.CheckList);
+        if (manualUI != null)
+            manualUI.Focus(currentFocus == FocusTarget.Manual);
 
         Debug.Log($"目前聚焦於 {currentFocus}");
     }
