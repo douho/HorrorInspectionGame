@@ -19,6 +19,11 @@ public class GameFlowController : MonoBehaviour
 
     private int currentIndex = -1;
     public static GameFlowController Instance;
+    private int roundToken = 0;
+    private bool isSpawning = false;
+    public bool IsSpawning => isSpawning;
+
+
 
     private void Awake()
     {
@@ -45,6 +50,7 @@ public class GameFlowController : MonoBehaviour
 
     private IEnumerator _StartNextRoutine()
     {
+        isSpawning = true;
         if (camController != null)
         {
             camController.ClearRuntimeOverrides();
@@ -58,6 +64,8 @@ public class GameFlowController : MonoBehaviour
         InteractionLock.CameraLock = true;
         FocusManager.FocusLock = true;
 
+        roundToken++;
+
         // 2) 播過場（如果你有接 TransitionManager）
         if (transitionManager != null)
         {
@@ -68,6 +76,14 @@ public class GameFlowController : MonoBehaviour
             // 沒有 transition 也給一幀，避免輸入同幀穿透
             yield return null;
         }
+
+        // 重要：過場播完這裡不要觸發 OnCamChanged
+        // 因為角色資料還沒換、camSprites 也還沒 set
+        if (camController != null)
+            camController.ForceSwitchTo(0, invokeEvent: false);
+
+        // isSpawning 也不要在這裡關，因為你還沒換角色
+
 
         // 3) 清理 UI（你原本的）
         if (TutorialManager.TutorialFinished)
@@ -115,6 +131,8 @@ public class GameFlowController : MonoBehaviour
             // ★關鍵：過場結束後才觸發 CAM001，讓 D 的 delay 從這裡開始算
             camController.ForceSwitchTo(0, invokeEvent: true);
         }
+        // ★到這裡才算換人結束（Runner 才可以開始吃事件）
+        isSpawning = false;
 
         // 5) 解鎖
         InteractionLock.GlobalLock = false;
@@ -129,11 +147,28 @@ public class GameFlowController : MonoBehaviour
 
     public IEnumerator ExecuteStep(FeedbackStep step)
     {
-        // 1. 執行基礎延遲（ScriptableObject 中設定的 Delay）
+        int myToken = roundToken; // ★抓當前輪次
+
         if (step.delay > 0)
         {
-            yield return new WaitForSeconds(step.delay);
+            float t = 0f;
+            while (t < step.delay)
+            {
+                // ★如果換人了，直接中止
+                if (myToken != roundToken) yield break;
+                t += Time.deltaTime;
+                yield return null;
+            }
         }
+
+        // ★如果換人了，直接中止
+        if (myToken != roundToken) yield break;
+
+        //// 1. 執行基礎延遲（ScriptableObject 中設定的 Delay）
+        //if (step.delay > 0)
+        //{
+        //    yield return new WaitForSeconds(step.delay);
+        //}
 
         // 2. 處理回饋演出邏輯
         if (step.feedbackType == FeedbackType.Jumpscare)
@@ -203,6 +238,7 @@ public class GameFlowController : MonoBehaviour
     public void ConfirmDecision(bool approve)
     {
         if (InteractionLock.GlobalLock) return;
+        InteractionLock.GlobalLock = true;   // ★先鎖，防連點
 
         // ★新增：記錄這一輪的入境/不入境與是否正確
         if (GameSessionRecorder.Instance != null)

@@ -30,6 +30,8 @@ public class ScareSequenceRunner : MonoBehaviour
 
     void OnCamChanged(int camIndex)
     {
+        if (gameFlow.IsSpawning) return;
+
         // 1) °ò¥»¨¾§b
         if (gameFlow == null) return;
         var ch = gameFlow.currentCharacter;

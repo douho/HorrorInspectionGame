@@ -11,6 +11,7 @@ public class FocusManager : MonoBehaviour
     [Header("桌面可互動物件")]
     public IDCardUI idCardUI;
     public CheckListUI checkListUI;
+    public ManualUI manualUI;
 
     private enum FocusTarget { IDcard, CheckList }
     private FocusTarget currentFocus = FocusTarget.IDcard;
