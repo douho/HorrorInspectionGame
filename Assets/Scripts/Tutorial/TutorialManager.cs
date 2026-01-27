@@ -13,6 +13,10 @@ public class TutorialManager : MonoBehaviour
     private int step = 0;
     private bool waitingForTutorialEnd = false;
 
+    public TutorialSpotlight spotlight;
+    public ManualUI manualUI; // 讓你能抓 closedIconRoot
+
+
     private void Awake()
     {
         Instance = this;
@@ -163,6 +167,12 @@ public class TutorialManager : MonoBehaviour
 
     private void Step9_EndTutorial()
     {
+        if (spotlight != null && manualUI != null && manualUI.closedIconRoot != null)
+        {
+            var rt = manualUI.closedIconRoot.GetComponent<RectTransform>();
+            spotlight.Show(rt);
+        }
+
         // 只在最後一步，把手冊提示亮起
         if (FocusManager.Instance != null && FocusManager.Instance.manualUI != null)
         {
@@ -181,7 +191,6 @@ public class TutorialManager : MonoBehaviour
         );
 
         waitingForTutorialEnd = true;
-        //InteractionLock.GlobalLock = true;
     }
 
     private void OnEnable()
@@ -303,6 +312,7 @@ public class TutorialManager : MonoBehaviour
 
                 dialogueManager.HideDialogue();
 
+                if (spotlight != null) spotlight.Hide(); // 這裡才關掉 spotlight
                 // 把手冊提示燈熄掉（避免一直亮）
                 if (FocusManager.Instance != null && FocusManager.Instance.manualUI != null)
                     FocusManager.Instance.manualUI.SetHintGlow(false);
