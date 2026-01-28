@@ -17,7 +17,7 @@ MonoBehaviour:
   protrait: {fileID: 0}
   idCard: {fileID: 11400000, guid: d75ee98b615b6e14898467c0f51e0326, type: 2}
   shouldAllow: 0
-  jumpScareSequence: {fileID: 0}
+  jumpScareSequence: {fileID: 11400000, guid: fdfac244b947ec048b8f9147b04b711b, type: 2}
   monitorImages:
   - {fileID: 21300000, guid: 5b515126442cae54cbe3294a654f0972, type: 3}
   - {fileID: 21300000, guid: 805755093a93bbb40921a09d6f34dc82, type: 3}

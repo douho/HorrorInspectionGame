@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3141268d32fd684aa3f67e505a8ee16, type: 3}
+  m_Name: JS_Visitor_Tatsumi
+  m_EditorClassIdentifier: 
+  triggerCondition: 0
+  steps:
+  - feedbackType: 2
+    delay: 0.05
+    triggerCamIndex: 1
+    silenceAudio: 0
+    overrideImage: {fileID: 0}
+    jumpscareImage: {fileID: 0}

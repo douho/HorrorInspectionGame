@@ -128,8 +128,8 @@ public class GameFlowController : MonoBehaviour
         {
             camController.SetCamImages(ch.monitorImages, ch);
 
-            // ★關鍵：過場結束後才觸發 CAM001，讓 D 的 delay 從這裡開始算
-            camController.ForceSwitchTo(0, invokeEvent: true);
+            // 先把畫面切到 CAM001，但不要丟事件（避免 Runner 在鎖住時吃掉）
+            camController.ForceSwitchTo(0, invokeEvent: false);
         }
         // ★到這裡才算換人結束（Runner 才可以開始吃事件）
         isSpawning = false;
@@ -138,6 +138,9 @@ public class GameFlowController : MonoBehaviour
         InteractionLock.GlobalLock = false;
         InteractionLock.CameraLock = false;
         FocusManager.FocusLock = false;
+
+        // ★解鎖後再「重新送一次事件」給 Runner（同一個 index 再呼叫一次沒差）
+        camController.ForceSwitchTo(0, invokeEvent: true);
     }
 
     public void StartNext()

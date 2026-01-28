@@ -23,14 +23,22 @@ public class FeedbackSystem : MonoBehaviour
     [Header("音效")]
     public AudioSource audioSource;
     public AudioClip jumpscareClip;
+    public AudioClip flickerClip;
+    public AudioClip warningClip;   // ★新增：Warning 音效（可不填）
 
     [Header("Flicker（輕微驚嚇）")]
     public Color flickerColor = Color.white;   // 你也可以改成偏白偏灰
     public float flickerDuration = 0.12f;      // 比 jumpscare 短
-    public AudioClip flickerClip;
 
+    [Header("Light Shake（監視器微震）")]
+    public RectTransform shakeTarget;   // ★把 camDisplay 的 RectTransform 拖進來
+    public float shakeDuration = 0.18f;
+    public float shakeStrength = 6f;    // 像素強度（UI座標）
+    public int shakeVibrato = 18;       // 抖動頻率
 
     Coroutine rumbleCo;
+    private Coroutine shakeCo;
+    private Vector2 _shakeOrigin;
 
     void PlayRumble(float lowFreq, float highFreq, float duration)
     {
@@ -78,6 +86,9 @@ public class FeedbackSystem : MonoBehaviour
             flashOverlay.gameObject.SetActive(true);
             flashOverlay.color = new Color(1, 1, 1, 0);
         }
+
+        if (shakeTarget != null)
+            _shakeOrigin = shakeTarget.anchoredPosition;
     }
 
     public void Trigger(FeedbackType type)
@@ -100,7 +111,50 @@ public class FeedbackSystem : MonoBehaviour
                 // Flicker 通常不震，但你要也可以
                 // PlayRumble(0.2f, 0.4f, 0.08f);
                 break;
+
+            case FeedbackType.Warning:
+                // 你可以把 Warning 當成：紅色閃一下 + （中版以上）警告音
+                PlayFlash(new Color(1f, 0.2f, 0.2f));   // 偏紅
+                PlaySound(warningClip);
+                // 通常 Warning 不震動、不大晃
+                break;
+
+            case FeedbackType.LightShake:
+                // 只做視覺微晃（音效要不要另加看你需求）
+                StartShake(shakeDuration, shakeStrength, shakeVibrato);
+                break;
         }
+    }
+
+    void StartShake(float duration, float strength, int vibrato)
+    {
+        if (shakeTarget == null) return;
+
+        if (shakeCo != null) StopCoroutine(shakeCo);
+        shakeCo = StartCoroutine(ShakeRoutine(duration, strength, vibrato));
+    }
+
+    IEnumerator ShakeRoutine(float duration, float strength, int vibrato)
+    {
+        // 記住原位（避免連續抖造成漂移）
+        _shakeOrigin = shakeTarget.anchoredPosition;
+
+        float elapsed = 0f;
+        float step = duration / Mathf.Max(1, vibrato);
+
+        while (elapsed < duration)
+        {
+            float x = Random.Range(-strength, strength);
+            float y = Random.Range(-strength, strength);
+
+            shakeTarget.anchoredPosition = _shakeOrigin + new Vector2(x, y);
+
+            yield return new WaitForSeconds(step);
+            elapsed += step;
+        }
+
+        shakeTarget.anchoredPosition = _shakeOrigin;
+        shakeCo = null;
     }
 
     void PlayFlash(Color color)
