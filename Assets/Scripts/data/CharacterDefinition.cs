@@ -9,6 +9,8 @@ public class CharacterDefinition : ScriptableObject
     public IDCardDefinition idCard; // 角色對應的身分證
     public bool shouldAllow; // 這個角色正確答案：應入境？
 
+    public Sprite silhouetteSprite; // 角色的剪影圖
+
     public JumpScareSequence jumpScareSequence;
 
 
