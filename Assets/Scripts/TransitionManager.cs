@@ -5,62 +5,66 @@ using System.Collections;
 public class TransitionManager : MonoBehaviour
 {
     [Header("Refs")]
-    public CanvasGroup transitionCanvas;   // 只負責透明度
+    public GameObject transitionRoot;      // TransitionRoot (整個物件)
+    public Image transitionBG;             // TransitionBG 的 Image
+    public Image transitionGraphic;        // TransitionGraphic 的 Image
+    public Animator animator;              // 掛在 TransitionRoot 的 Animator
 
-    [Header("Timing (seconds)")]
-    public float fadeInDuration = 0.5f;
-    public float holdDuration = 0.6f;
-    public float fadeOutDuration = 0.5f;
+    [Header("Config")]
+    public Color bgColor = Color.black;
 
-    [Header("Color")]
-    public Image transitionBG;         // 指向 TransitionBG 的 Image
-    public Color fadeColor = Color.black; // 你想要的顏色
-    public bool IsTransitioning { get; private set; } = false;
+    public bool IsTransitioning { get; private set; }
 
-    public IEnumerator PlayTransition()
+    // 給動畫事件呼叫
+    public void OnEnterFinished()
     {
-        IsTransitioning = true;
-        transitionCanvas.gameObject.SetActive(true);
-
-        // Color
-        if (transitionBG != null)
-            transitionBG.color = fadeColor; 
-
-        // Fade In
-        yield return FadeAlpha(0.5f, 1f, fadeInDuration);
-
-        // Hold
-        if (holdDuration > 0f)
-            yield return new WaitForSeconds(holdDuration);
-
-        // Fade Out
-        yield return FadeAlpha(1f, 0.5f, fadeOutDuration);
-
-
-
-        transitionCanvas.alpha = 0f;
-        transitionCanvas.gameObject.SetActive(false);
         IsTransitioning = false;
     }
 
-    IEnumerator FadeAlpha(float from, float to, float duration)
+    // 播放「黑影 → 彩色」(黑影淡掉)
+    public IEnumerator PlayEnter(Sprite silhouette, System.Action onCovered = null)
     {
-        if (duration <= 0f)
+        if (transitionRoot == null || transitionGraphic == null || animator == null)
         {
-            transitionCanvas.alpha = to;
+            Debug.LogError("[TransitionManager] Missing refs!");
             yield break;
         }
 
-        float t = 0f;
-        transitionCanvas.alpha = from;
+        IsTransitioning = true;
 
-        while (t < duration)
-        {
-            t += Time.deltaTime;
-            transitionCanvas.alpha = Mathf.Lerp(from, to, t / duration);
-            yield return null;
-        }
+        transitionRoot.SetActive(true);
 
-        transitionCanvas.alpha = to;
+        if (transitionBG != null) transitionBG.color = bgColor;
+
+        transitionGraphic.sprite = silhouette;
+
+        SetImageAlpha(transitionGraphic, 1f);
+        if (transitionBG != null) SetImageAlpha(transitionBG, 1f);
+
+        // ★ 先等一幀，確保黑影真的已經畫到畫面上
+        yield return null;
+
+        // ★ 在黑影蓋住的時候換角色資料/監視器圖
+        onCovered?.Invoke();
+
+        // ★ 再等一幀保險（可留可不留）
+        yield return null;
+
+        animator.ResetTrigger("Enter");
+        animator.SetTrigger("Enter");
+
+        // 等動畫事件解除
+        while (IsTransitioning) yield return null;
+
+        transitionRoot.SetActive(false);
+    }
+
+
+    void SetImageAlpha(Image img, float a)
+    {
+        if (img == null) return;
+        var c = img.color;
+        c.a = a;
+        img.color = c;
     }
 }

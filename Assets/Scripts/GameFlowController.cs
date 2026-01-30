@@ -66,16 +66,16 @@ public class GameFlowController : MonoBehaviour
 
         roundToken++;
 
-        // 2) 播過場（如果你有接 TransitionManager）
-        if (transitionManager != null)
-        {
-            yield return StartCoroutine(transitionManager.PlayTransition());
-        }
-        else
-        {
-            // 沒有 transition 也給一幀，避免輸入同幀穿透
-            yield return null;
-        }
+        //// 2) 播過場（如果你有接 TransitionManager）
+        //if (transitionManager != null)
+        //{
+        //    StartCoroutine(transitionManager.PlayEnter(currentCharacter.silhouetteSprite));
+        //}
+        //else
+        //{
+        //    // 沒有 transition 也給一幀，避免輸入同幀穿透
+        //    yield return null;
+        //}
 
         // 重要：過場播完這裡不要觸發 OnCamChanged
         // 因為角色資料還沒換、camSprites 也還沒 set
@@ -103,6 +103,18 @@ public class GameFlowController : MonoBehaviour
         currentIndex++;
         var ch = characterDB.GetByIndex(currentIndex);
         currentCharacter = ch;
+
+        // ★ 2) 播「新角色剪影」過場：一定要在拿到 ch 之後！
+        if (transitionManager != null)
+        {
+            // 等過場播完再繼續（很重要）
+            yield return StartCoroutine(transitionManager.PlayEnter(ch.silhouetteSprite));
+        }
+        else
+        {
+            yield return null;
+        }
+
 
         if (ch == null)
         {
