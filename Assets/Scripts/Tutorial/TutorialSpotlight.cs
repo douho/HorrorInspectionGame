@@ -78,6 +78,14 @@ public class TutorialSpotlight : MonoBehaviour
     public void Show(RectTransform focusTarget)
     {
         target = focusTarget;
+
+        // 1) Spotlight 期間：鎖住焦點切換
+        FocusManager.FocusLock = true;
+
+        // 2) Spotlight 期間：把 FocusManager 畫的 ring 全部關掉，避免雙 ring
+        if (FocusManager.Instance != null)
+            FocusManager.Instance.ClearFocusVisual();
+
         if (overlayImage != null) overlayImage.gameObject.SetActive(true);
         Debug.Log($"[Spotlight] Show target={target?.name}, overlayActive={overlayImage.gameObject.activeInHierarchy}, mat={runtimeMat != null}");
 
@@ -87,5 +95,8 @@ public class TutorialSpotlight : MonoBehaviour
     {
         if (overlayImage != null) overlayImage.gameObject.SetActive(false);
         target = null;
+
+        // Spotlight 結束：解除鎖定（是否立刻回到哪個焦點由流程決定）
+        FocusManager.FocusLock = false;
     }
 }

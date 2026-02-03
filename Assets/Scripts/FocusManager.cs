@@ -24,9 +24,22 @@ public class FocusManager : MonoBehaviour
     }
     void Start()
     {
-        //一開始先聚焦身分證
-        SetFocus(FocusTarget.IDcard);
+        ////一開始先聚焦身分證
+        //SetFocus(FocusTarget.IDcard);
     }
+
+    public void ClearFocusVisual()
+    {
+        if (idCardUI != null) idCardUI.Focus(false);
+        if (checkListUI != null) checkListUI.Focus(false);
+        if (manualUI != null) manualUI.Focus(false);
+    }
+
+    // 需要的話給外部直接指定（比 ResetFocus 更好用）
+    public void FocusIDCard() => SetFocus(FocusTarget.IDcard);
+    public void FocusCheckList() => SetFocus(FocusTarget.CheckList);
+    public void FocusManual() => SetFocus(FocusTarget.Manual);
+
 
     // Update is called once per frame
     void Update()
