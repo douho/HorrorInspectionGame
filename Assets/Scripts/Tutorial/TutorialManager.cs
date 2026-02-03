@@ -98,6 +98,7 @@ public class TutorialManager : MonoBehaviour
     {
         InteractionLock.GlobalLock = false;
         FocusManager.FocusLock = false;
+        InteractionLock.CameraLock = false;  // 這行是關鍵
 
         dialogueManager.MoveToBottom();
         dialogueManager.ShowDialogue("請用 Q/E 切換到下個監視器畫面，確認入關者眼睛狀況。\n為確保對象為人類，據觀察，「偽生物」的眼白會有紅色斑點。\n請多加注意。");

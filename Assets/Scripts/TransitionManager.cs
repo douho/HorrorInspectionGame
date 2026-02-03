@@ -5,10 +5,11 @@ using System.Collections;
 public class TransitionManager : MonoBehaviour
 {
     [Header("Refs")]
-    public GameObject transitionRoot;      // TransitionRoot (整個物件)
-    public Image transitionBG;             // TransitionBG 的 Image
-    public Image transitionGraphic;        // TransitionGraphic 的 Image
-    public Animator animator;              // 掛在 TransitionRoot 的 Animator
+    public GameObject transitionRoot;
+    public Image transitionBG;
+    public Image transitionGraphic;
+    public Animator animator;
+    public CanvasGroup canvasGroup;        // ★新增：如果你有 CanvasGroup（你之前有）
 
     [Header("Config")]
     public Color bgColor = Color.black;
@@ -21,8 +22,8 @@ public class TransitionManager : MonoBehaviour
         IsTransitioning = false;
     }
 
-    // 播放「黑影 → 彩色」(黑影淡掉)
-    public IEnumerator PlayEnter(Sprite silhouette, System.Action onCovered = null)
+    public IEnumerator PlayEnter(Sprite silhouette, Sprite colorSprite, System.Action onCovered = null)
+
     {
         if (transitionRoot == null || transitionGraphic == null || animator == null)
         {
@@ -34,31 +35,55 @@ public class TransitionManager : MonoBehaviour
 
         transitionRoot.SetActive(true);
 
-        if (transitionBG != null) transitionBG.color = bgColor;
+        // ★確保 CanvasGroup 不是 0（不然你會什麼都看不到）
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha = 1f;
+            canvasGroup.blocksRaycasts = true;
+            canvasGroup.interactable = false;
+        }
+
+        if (transitionBG != null)
+        {
+            transitionBG.sprite = colorSprite;    // ★彩圖底
+            transitionBG.color = Color.white;     // ★不要染色，保持原圖
+            SetImageAlpha(transitionBG, 1f);      // ★底圖要全亮
+        }
 
         transitionGraphic.sprite = silhouette;
-
+        transitionGraphic.color = Color.white;
         SetImageAlpha(transitionGraphic, 1f);
-        if (transitionBG != null) SetImageAlpha(transitionBG, 1f);
 
-        // ★ 先等一幀，確保黑影真的已經畫到畫面上
+        // ★先等一幀，確保黑影真的畫到畫面上
         yield return null;
 
-        // ★ 在黑影蓋住的時候換角色資料/監視器圖
+        // ★在黑影蓋住時換資料（避免穿幫）
+        yield return new WaitForSeconds(0.2f);
         onCovered?.Invoke();
 
-        // ★ 再等一幀保險（可留可不留）
         yield return null;
 
         animator.ResetTrigger("Enter");
         animator.SetTrigger("Enter");
 
-        // 等動畫事件解除
-        while (IsTransitioning) yield return null;
+        // ★安全機制：避免動畫事件沒打到就永遠卡死
+        float safety = 5f;  
+        while (IsTransitioning && safety > 0f)
+        {
+            safety -= Time.unscaledDeltaTime;
+            yield return null;
+        }
 
+        if (IsTransitioning)
+        {
+            Debug.LogWarning("[TransitionManager] Enter animation event not fired, force continue.");
+            IsTransitioning = false;
+        }
+
+        // 收尾
+        //if (canvasGroup != null) canvasGroup.alpha = 0f;
         transitionRoot.SetActive(false);
     }
-
 
     void SetImageAlpha(Image img, float a)
     {

@@ -39,7 +39,20 @@ public class TutorialSpotlight : MonoBehaviour
     {
         if (overlayImage == null) { Debug.LogError("[Spotlight] overlayImage null"); return; }
         if (runtimeMat == null) { Debug.LogError("[Spotlight] runtimeMat null (material missing?)"); return; }
-        if (target == null) { Debug.LogWarning("[Spotlight] target null"); return; }
+        if (target == null)
+        {
+            // 不要每幀一直噴 Log（會刷爆）
+            // Debug.LogWarning("[Spotlight] target null");
+
+            // 直接把遮罩關掉，避免整片蓋住造成「白屏」
+            if (overlayImage != null)
+                overlayImage.enabled = false;
+
+            return;
+        }
+
+        if (overlayImage != null && !overlayImage.enabled)
+            overlayImage.enabled = true;
 
         // 用 overlayImage 的 active 狀態判斷（不是 gameObject.activeSelf）
         if (overlayImage == null || !overlayImage.gameObject.activeInHierarchy) return;

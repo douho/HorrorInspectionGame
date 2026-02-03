@@ -57,7 +57,7 @@ public class GameFlowController : MonoBehaviour
             camController.ForceSwitchTo(0, invokeEvent: false);
 
             // ★ 關鍵：立刻指定一張「空畫面 / 黑畫面」
-            camController.camDisplay.sprite = null;
+            //camController.camDisplay.sprite = null;
         }
         // 1) 鎖住一切操作
         InteractionLock.GlobalLock = true;
@@ -102,23 +102,9 @@ public class GameFlowController : MonoBehaviour
         // 4) 換角色
         currentIndex++;
         var ch = characterDB.GetByIndex(currentIndex);
-        currentCharacter = ch;
-
-        // ★ 2) 播「新角色剪影」過場：一定要在拿到 ch 之後！
-        if (transitionManager != null)
-        {
-            // 等過場播完再繼續（很重要）
-            yield return StartCoroutine(transitionManager.PlayEnter(ch.silhouetteSprite));
-        }
-        else
-        {
-            yield return null;
-        }
-
 
         if (ch == null)
         {
-            // 結束場景前解鎖避免卡住（雖然會換場景）
             InteractionLock.GlobalLock = false;
             InteractionLock.CameraLock = false;
             FocusManager.FocusLock = false;
@@ -127,23 +113,66 @@ public class GameFlowController : MonoBehaviour
             yield break;
         }
 
-        if (GameSessionRecorder.Instance != null)
-            GameSessionRecorder.Instance.StartRound(ch);
+        Sprite cam001Color = (ch.monitorImages != null && ch.monitorImages.Length > 0) ? ch.monitorImages[0] : null;
 
-        if (ch.jumpScareSequence != null)
-            ch.jumpScareSequence.ResetSequence();
-
-        if (idCardUI != null)
-            idCardUI.SetCard(ch.idCard);
-
-        if (camController != null)
+        // ★ 2) 播「新角色剪影」過場：在黑影蓋住的時候就把資料換掉
+        if (transitionManager != null)
         {
-            camController.SetCamImages(ch.monitorImages, ch);
 
-            // 先把畫面切到 CAM001，但不要丟事件（避免 Runner 在鎖住時吃掉）
-            camController.ForceSwitchTo(0, invokeEvent: false);
+            //if (idCardUI != null)
+            //    idCardUI.SetCard(ch.idCard);
+
+            yield return StartCoroutine(
+                transitionManager.PlayEnter(
+                    ch.silhouetteSprite,
+                    cam001Color,
+                    onCovered: () =>
+                    {
+                        // 這裡才是真正「換角色」的瞬間（黑影蓋住，不會穿幫）
+                        currentCharacter = ch;
+
+                        if (GameSessionRecorder.Instance != null)
+                            GameSessionRecorder.Instance.StartRound(ch);
+
+                        if (ch.jumpScareSequence != null)
+                            ch.jumpScareSequence.ResetSequence();
+
+                        //if (idCardUI != null)
+                        //    idCardUI.SetCard(ch.idCard);
+
+                        if (camController != null)
+                        {
+                            camController.ClearRuntimeOverrides();
+                            camController.SetCamImages(ch.monitorImages, ch);
+                            camController.ForceSwitchTo(0, invokeEvent: false);
+                        }
+                    }
+                )
+            );
+
+
+            if (idCardUI != null)
+                idCardUI.SetCard(ch.idCard);
         }
-        // ★到這裡才算換人結束（Runner 才可以開始吃事件）
+        else
+        {
+            // 沒有轉場就直接換
+            currentCharacter = ch;
+
+            if (idCardUI != null)
+                idCardUI.SetCard(ch.idCard);
+
+            if (camController != null)
+            {
+                camController.ClearRuntimeOverrides();
+                camController.SetCamImages(ch.monitorImages, ch);
+                camController.ForceSwitchTo(0, invokeEvent: false);
+            }
+
+            yield return null;
+        }
+
+        // ★到這裡才算換人結束
         isSpawning = false;
 
         // 5) 解鎖
@@ -151,8 +180,9 @@ public class GameFlowController : MonoBehaviour
         InteractionLock.CameraLock = false;
         FocusManager.FocusLock = false;
 
-        // ★解鎖後再「重新送一次事件」給 Runner（同一個 index 再呼叫一次沒差）
+        // ★解鎖後再送一次事件
         camController.ForceSwitchTo(0, invokeEvent: true);
+
     }
 
     public void StartNext()
@@ -269,13 +299,13 @@ public class GameFlowController : MonoBehaviour
 
 
     void ShowEnding()
-{
-    SceneManager.LoadScene("ResultsScene");
-}
+    {
+        SceneManager.LoadScene("ResultsScene");
+    }
 
 
-//void OnEnable() { CamSwitchController.OnCamChanged += HandleCamChanged; }
-//    void OnDisable() { CamSwitchController.OnCamChanged -= HandleCamChanged; }
+    //void OnEnable() { CamSwitchController.OnCamChanged += HandleCamChanged; }
+    //    void OnDisable() { CamSwitchController.OnCamChanged -= HandleCamChanged; }
 
     void Update()
     {
