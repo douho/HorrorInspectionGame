@@ -35,6 +35,7 @@ public class ManualUI : MonoBehaviour
     {
         if (openViewRoot != null) openViewRoot.SetActive(true);
         isOpen = true;
+        FocusManager.FocusLock = true;        // 開啟時鎖住桌面焦點切換
         if (focusRingDesk != null) focusRingDesk.SetActive(false);
     }
 
@@ -42,6 +43,8 @@ public class ManualUI : MonoBehaviour
     {
         if (openViewRoot != null) openViewRoot.SetActive(false);
         isOpen = false;
+        FocusManager.FocusLock = false;        // 關閉時解鎖
+
         // 回到桌面時如果仍聚焦就亮
         if (focusRingDesk != null) focusRingDesk.SetActive(isFocused);
     }
