@@ -40,6 +40,21 @@ public class TutorialManager : MonoBehaviour
         GoToStep(step);
     }
 
+    private System.Collections.IEnumerator ConsumeOneFrame()
+    {
+        // 暫時鎖住，讓空白鍵不會穿透去開 ID/Manual/Checklist
+        bool prevGlobal = InteractionLock.GlobalLock;
+        bool prevDialogue = InteractionLock.DialogueLock;
+
+        InteractionLock.GlobalLock = true;
+        InteractionLock.DialogueLock = true;
+
+        yield return null;
+
+        InteractionLock.GlobalLock = prevGlobal;
+        InteractionLock.DialogueLock = prevDialogue;
+    }
+
     public void GoToStep(int s)
     {
         if (TutorialFinished) return; // ★ 若已完成則不再執行任何步驟
@@ -295,6 +310,7 @@ public class TutorialManager : MonoBehaviour
         {
             if (Input.GetKeyDown(KeyCode.Space) || (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame))
             {
+                StartCoroutine(ConsumeOneFrame());   // 關鍵：消耗一幀
                 step++;
                 GoToStep(step);
             }
