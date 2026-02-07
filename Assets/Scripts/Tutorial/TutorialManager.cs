@@ -314,32 +314,59 @@ public class TutorialManager : MonoBehaviour
                 dialogueManager.HideDialogue();
 
                 if (spotlight != null) spotlight.Hide(); // 這裡才關掉 spotlight
-                // 把手冊提示燈熄掉（避免一直亮）
-                if (FocusManager.Instance != null && FocusManager.Instance.manualUI != null)
-                    FocusManager.Instance.manualUI.SetHintGlow(false);
+
+                // 不要在這裡把 ring 關掉，改成「切回正常聚焦到手冊」
+                if (FocusManager.Instance != null)
+                {
+                    // 先把教學用強制 glow 關掉（避免之後跟 Focus() 打架）
+                    if (FocusManager.Instance.manualUI != null)
+                        FocusManager.Instance.manualUI.SetHintGlow(false);
+
+                    // 強制把焦點指定在手冊（玩家立刻知道下一步）
+                    FocusManager.Instance.FocusManual();
+                }
+
+                //// 把手冊提示燈熄掉（避免一直亮）
+                //if (FocusManager.Instance != null && FocusManager.Instance.manualUI != null)
+                //    FocusManager.Instance.manualUI.SetHintGlow(false);
                 TutorialFinished = true;
 
+                // 用 coroutine 延後解鎖，避免同幀空白鍵穿透去開手冊
+                StartCoroutine(EndTutorialRoutine());
+
                 // 解鎖
-                InteractionLock.GlobalLock = false;
-                InteractionLock.DialogueLock = false;
-                FocusManager.FocusLock = false;
+                //InteractionLock.GlobalLock = false;
+                //InteractionLock.DialogueLock = false;
+                //FocusManager.FocusLock = false;
 
+                // ★新增：教學結束後，把正常焦點指定到手冊（讓 ring 留下來）
+                //FocusManager.Instance?.FocusManual();
 
-                gameObject.SetActive(false);
+                //gameObject.SetActive(false);
                 waitingForTutorialEnd = false;
 
-                //StartCoroutine(EndTutorialRoutine());
             }
         }
 
     }
+    //private System.Collections.IEnumerator EndTutorialRoutine()
+    //{
+    //    yield return null;                 // 等一幀，讓結束鍵不會同幀觸發 Checklist
+    //    InteractionLock.GlobalLock = false; // 解鎖，恢復操作
+    //    gameObject.SetActive(false);        // 最後再關掉 Tutorial
+    //}
+
     private System.Collections.IEnumerator EndTutorialRoutine()
     {
-        yield return null;                 // 等一幀，讓結束鍵不會同幀觸發 Checklist
-        InteractionLock.GlobalLock = false; // 解鎖，恢復操作
-        gameObject.SetActive(false);        // 最後再關掉 Tutorial
-    }
+        // 這一幀先維持鎖住，讓空白鍵不會被 Manual/Checklist/IDCard 吃到
+        yield return null;
 
+        InteractionLock.GlobalLock = false;
+        InteractionLock.DialogueLock = false;
+        FocusManager.FocusLock = false;
+
+        gameObject.SetActive(false);
+    }
 
 
     //private void CheckCameraProgress()
