@@ -190,6 +190,40 @@ public class GameFlowController : MonoBehaviour
         StartCoroutine(StartNextRoutine());
     }
 
+    // ★Debug：一鍵跳到最後一位
+    [SerializeField] private bool enableDebugHotkeys = true;
+
+    public void DebugJumpToLastVisitor()
+    {
+        if (characterDB == null) return;
+
+        // 你需要能拿到總數：依你的 CharacterDatabase 實作選一種
+        // 假設你有：characterDB.Count 或 characterDB.GetCount()
+        int total = characterDB.entries.Count; // ←如果這行報錯，改成你資料庫真正的總數取得方式
+
+        int lastIndex = total - 1;
+        if (lastIndex < 0) return;
+
+        // 避免疊 coroutine
+        if (startNextCo != null)
+        {
+            StopCoroutine(startNextCo);
+            startNextCo = null;
+        }
+
+        // 避免卡住（保險）
+        InteractionLock.GlobalLock = false;
+        InteractionLock.CameraLock = false;
+        FocusManager.FocusLock = false;
+
+        // ★關鍵：設成「最後一位的前一位」
+        currentIndex = lastIndex - 1;
+
+        // 跑你原本完整換人流程
+        StartNext();
+    }
+
+
     public IEnumerator ExecuteStep(FeedbackStep step)
     {
         int myToken = roundToken; // ★抓當前輪次
@@ -206,7 +240,7 @@ public class GameFlowController : MonoBehaviour
             }
         }
 
-        // ★如果換人了，直接中止
+        // 如果換人了，直接中止
         if (myToken != roundToken) yield break;
 
         //// 1. 執行基礎延遲（ScriptableObject 中設定的 Delay）
@@ -258,6 +292,46 @@ public class GameFlowController : MonoBehaviour
                 camController.SetOverrideImage(step.overrideImage);
             }
         }
+
+        if (step.feedbackType == FeedbackType.BossJumpscare)
+        {
+            // 1) 一次性爆點：白閃 + 大圖
+            if (FeedbackSystem.Instance != null)
+                FeedbackSystem.Instance.Trigger(FeedbackType.Jumpscare); // 你原本的白閃 +（中/高）短音
+
+            // 大圖立刻跳出
+            if (jumpscareController != null)
+                jumpscareController.TriggerJumpscare(step.jumpscareImage);
+
+            // 2) 立刻開始持續效果（直到決策才停）
+            if (step.persistentUntilDecision && FeedbackSystem.Instance != null)
+            {
+                FeedbackSystem.Instance.StartBossPersistent(
+                    roarLoop: step.loopAudio,
+                    enableRumble: true,          // 高回饋才會真的震（StartBossPersistent 內有擋）
+                    shakeStrength: 6f,           // 你可做成 step 欄位
+                    shakeVibrato: 25
+                );
+            }
+
+            // 3) 約 1 秒後：把大圖變成「監視器覆蓋」
+            yield return new WaitForSeconds(1.0f);
+
+            // 隱藏大圖（你 JumpscareController 自己也會 hide，但這裡保險）
+            // (可不做，因為 showTime 你可設 1 秒)
+            // jumpscareController.Hide() 你目前是 private，保留 showTime=1 即可
+
+            // 覆蓋 CAM003（triggerCamIndex 會是 2）
+            if (step.overrideImage != null && step.triggerCamIndex >= 0)
+                camController.SetRuntimeOverride(step.triggerCamIndex, step.overrideImage);
+
+            // 覆蓋 CAM002
+            if (step.secondaryOverrideImage != null && step.secondaryOverrideCamIndex >= 0)
+                camController.SetRuntimeOverride(step.secondaryOverrideCamIndex, step.secondaryOverrideImage);
+
+            yield break;
+        }
+
     }
 
     public void OnCheckListFinished()
@@ -282,6 +356,9 @@ public class GameFlowController : MonoBehaviour
 
     public void ConfirmDecision(bool approve)
     {
+        if (FeedbackSystem.Instance != null)
+            FeedbackSystem.Instance.StopBossPersistent();
+
         if (InteractionLock.GlobalLock) return;
         InteractionLock.GlobalLock = true;   // ★先鎖，防連點
 
@@ -309,6 +386,12 @@ public class GameFlowController : MonoBehaviour
 
     void Update()
     {
+        if (!enableDebugHotkeys) return;
+
+        // 跳到下一位
         if (Input.GetKeyDown(KeyCode.N)) StartNext();
+
+        // 跳到最後一位
+        if (Input.GetKeyDown(KeyCode.L)) DebugJumpToLastVisitor();
     }
 }

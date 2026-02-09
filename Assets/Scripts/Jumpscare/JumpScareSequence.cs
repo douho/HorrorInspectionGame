@@ -79,7 +79,18 @@ public struct FeedbackStep
     public FeedbackType feedbackType;
     public float delay;
     public int triggerCamIndex;      // 指定觸發的相機 (0, 1, 2...)
-    public bool silenceAudio;
+
     public Sprite overrideImage;     // 監視器畫面覆蓋
     public Sprite jumpscareImage;    // 大圖 Jumpscare
+
+    // 第二台鏡頭也要覆蓋
+    public int secondaryOverrideCamIndex;  // 例如 1 (CAM002)
+    public Sprite secondaryOverrideImage;  // CAM002 的覆蓋圖
+
+    // Boss 吼叫 loop（中/高回饋才會播）
+    public AudioClip loopAudio;
+
+    // 是否啟動「持續震動/持續晃動」直到決策
+    public bool persistentUntilDecision;
+
 }

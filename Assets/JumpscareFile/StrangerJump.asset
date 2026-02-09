@@ -17,12 +17,18 @@ MonoBehaviour:
   - feedbackType: 3
     delay: 0.8
     triggerCamIndex: 0
-    silenceAudio: 1
     overrideImage: {fileID: 21300000, guid: adda9503f7587af48b5874e67297affe, type: 3}
     jumpscareImage: {fileID: 0}
+    secondaryOverrideCamIndex: 0
+    secondaryOverrideImage: {fileID: 0}
+    loopAudio: {fileID: 8300000, guid: 515a5f0a6271f2a4092c72c293e8f975, type: 3}
+    persistentUntilDecision: 0
   - feedbackType: 0
     delay: 0.8
     triggerCamIndex: 2
-    silenceAudio: 0
     overrideImage: {fileID: 21300000, guid: b5e7b05eabaa1ac4da1f67ef8dff31ec, type: 3}
     jumpscareImage: {fileID: 21300000, guid: b5e7b05eabaa1ac4da1f67ef8dff31ec, type: 3}
+    secondaryOverrideCamIndex: 0
+    secondaryOverrideImage: {fileID: 0}
+    loopAudio: {fileID: 8300000, guid: fccd82be0c425c847b23967217cfd9da, type: 3}
+    persistentUntilDecision: 0

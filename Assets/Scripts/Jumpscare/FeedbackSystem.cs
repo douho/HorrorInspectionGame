@@ -8,7 +8,8 @@ public enum FeedbackType
     Jumpscare,
     Warning,
     LightShake,
-    Flicker
+    Flicker,
+    BossJumpscare
 }
 
 public class FeedbackSystem : MonoBehaviour
@@ -24,21 +25,114 @@ public class FeedbackSystem : MonoBehaviour
     public AudioSource audioSource;
     public AudioClip jumpscareClip;
     public AudioClip flickerClip;
-    public AudioClip warningClip;   // ★新增：Warning 音效（可不填）
+    public AudioClip warningClip;   // Warning 音效（可不填）
 
     [Header("Flicker（輕微驚嚇）")]
     public Color flickerColor = Color.white;   // 你也可以改成偏白偏灰
     public float flickerDuration = 0.12f;      // 比 jumpscare 短
 
     [Header("Light Shake（監視器微震）")]
-    public RectTransform shakeTarget;   // ★把 camDisplay 的 RectTransform 拖進來
+    public RectTransform shakeTarget;   // 把 camDisplay 的 RectTransform 拖進來
     public float shakeDuration = 0.18f;
     public float shakeStrength = 6f;    // 像素強度（UI座標）
     public int shakeVibrato = 18;       // 抖動頻率
 
+    [Header("Boss Loop（持續音效）")]
+    public AudioSource loopSource;   // 專門播 loop，避免跟 OneShot 打架
+
+    private Coroutine bossShakeCo;
+    private Coroutine bossRumbleCo;
+    private bool bossActive;
+
     Coroutine rumbleCo;
     private Coroutine shakeCo;
     private Vector2 _shakeOrigin;
+
+    public void StartBossPersistent(AudioClip roarLoop, bool enableRumble, float shakeStrength, int shakeVibrato)
+    {
+        if (bossActive) return;
+        bossActive = true;
+
+        // 1) loop roar（中/高回饋才有）
+        if (FeedbackLevel >= 1 && loopSource != null && roarLoop != null)
+        {
+            loopSource.clip = roarLoop;
+            loopSource.loop = true;
+            loopSource.Play();
+        }
+
+        // 2) 持續 shake（一直抖到 Stop）
+        if (shakeTarget != null)
+        {
+            if (bossShakeCo != null) StopCoroutine(bossShakeCo);
+            bossShakeCo = StartCoroutine(BossShakeLoop(shakeStrength, shakeVibrato));
+        }
+
+        // 3) 持續 rumble（只有高回饋）
+        if (enableRumble && FeedbackLevel >= 2)
+        {
+            var pad = Gamepad.current;
+            if (pad != null)
+            {
+                if (bossRumbleCo != null) StopCoroutine(bossRumbleCo);
+                bossRumbleCo = StartCoroutine(BossRumbleLoop(pad, 0.6f, 1.0f)); // 你可調強度
+            }
+        }
+    }
+
+    public void StopBossPersistent()
+    {
+        bossActive = false;
+
+        // stop loop audio
+        if (loopSource != null)
+        {
+            loopSource.Stop();
+            loopSource.clip = null;
+        }
+
+        // stop shake
+        if (bossShakeCo != null)
+        {
+            StopCoroutine(bossShakeCo);
+            bossShakeCo = null;
+        }
+        if (shakeTarget != null) shakeTarget.anchoredPosition = _shakeOrigin;
+
+        // stop rumble
+        if (bossRumbleCo != null)
+        {
+            StopCoroutine(bossRumbleCo);
+            bossRumbleCo = null;
+        }
+        StopRumble();
+    }
+
+    IEnumerator BossShakeLoop(float strength, int vibrato)
+    {
+        _shakeOrigin = shakeTarget.anchoredPosition;
+        float step = 1f / Mathf.Max(1, vibrato); // 每秒 vibrato 次
+
+        while (bossActive)
+        {
+            float x = Random.Range(-strength, strength);
+            float y = Random.Range(-strength, strength);
+            shakeTarget.anchoredPosition = _shakeOrigin + new Vector2(x, y);
+            yield return new WaitForSeconds(step);
+        }
+
+        shakeTarget.anchoredPosition = _shakeOrigin;
+    }
+
+    IEnumerator BossRumbleLoop(Gamepad pad, float low, float high)
+    {
+        while (bossActive)
+        {
+            pad.SetMotorSpeeds(low, high);
+            yield return null; // 每幀維持
+        }
+        pad.SetMotorSpeeds(0f, 0f);
+    }
 
     void PlayRumble(float lowFreq, float highFreq, float duration)
     {
