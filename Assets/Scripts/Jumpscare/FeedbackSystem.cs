@@ -31,14 +31,35 @@ public class FeedbackSystem : MonoBehaviour
     public Color flickerColor = Color.white;   // 你也可以改成偏白偏灰
     public float flickerDuration = 0.12f;      // 比 jumpscare 短
 
-    [Header("Light Shake（監視器微震）")]
+    [Header("Light Shake（監視器視覺微震）")]
     public RectTransform shakeTarget;   // 把 camDisplay 的 RectTransform 拖進來
     public float shakeDuration = 0.18f;
     public float shakeStrength = 6f;    // 像素強度（UI座標）
     public int shakeVibrato = 18;       // 抖動頻率
 
+    [Header("Boss Shake Pulse（晃動間隔）")]
+    public bool bossShakePulsed = true;
+    public float bossShakeOnTime = 0.35f;
+    public float bossShakeOffTime = 0.25f;
+
+
+    [Header("One-shot Rumble（手把短震）")]
+    [Range(0f, 1f)] public float oneShotLow = 0.6f;
+    [Range(0f, 1f)] public float oneShotHigh = 1.0f;
+    public float oneShotDuration = 0.25f;
+
     [Header("Boss Loop（持續音效）")]
     public AudioSource loopSource;   // 專門播 loop，避免跟 OneShot 打架
+
+    [Header("Boss Rumble（手把持續震動）")]
+    [Range(0f, 1f)] public float bossRumbleLow = 0.6f;
+    [Range(0f, 1f)] public float bossRumbleHigh = 1.0f;
+
+    [Header("Boss Rumble Pulse（震動間隔）")]
+    public bool bossRumblePulsed = true;
+    public float bossRumbleOnTime = 0.35f;   // 震多久
+    public float bossRumbleOffTime = 0.25f;  // 停多久
+
 
     private Coroutine bossShakeCo;
     private Coroutine bossRumbleCo;
@@ -47,6 +68,8 @@ public class FeedbackSystem : MonoBehaviour
     Coroutine rumbleCo;
     private Coroutine shakeCo;
     private Vector2 _shakeOrigin;
+
+    private Coroutine flashCo;
 
     public void StartBossPersistent(AudioClip roarLoop, bool enableRumble, float shakeStrength, int shakeVibrato)
     {
@@ -75,7 +98,7 @@ public class FeedbackSystem : MonoBehaviour
             if (pad != null)
             {
                 if (bossRumbleCo != null) StopCoroutine(bossRumbleCo);
-                bossRumbleCo = StartCoroutine(BossRumbleLoop(pad, 0.6f, 1.0f)); // 你可調強度
+                bossRumbleCo = StartCoroutine(BossRumbleLoop(pad, bossRumbleLow, bossRumbleHigh)); // 你可調強度
             }
         }
     }
@@ -110,26 +133,81 @@ public class FeedbackSystem : MonoBehaviour
 
     IEnumerator BossShakeLoop(float strength, int vibrato)
     {
+        if (shakeTarget == null) yield break;
+
         _shakeOrigin = shakeTarget.anchoredPosition;
-        float step = 1f / Mathf.Max(1, vibrato); // 每秒 vibrato 次
 
         while (bossActive)
         {
-            float x = Random.Range(-strength, strength);
-            float y = Random.Range(-strength, strength);
-            shakeTarget.anchoredPosition = _shakeOrigin + new Vector2(x, y);
-            yield return new WaitForSeconds(step);
+            // 如果不想脈衝：維持「一直抖」
+            if (!bossShakePulsed)
+            {
+                float step = 1f / Mathf.Max(1, vibrato);
+                float x = Random.Range(-strength, strength);
+                float y = Random.Range(-strength, strength);
+                shakeTarget.anchoredPosition = _shakeOrigin + new Vector2(x, y);
+                yield return new WaitForSeconds(step);
+                continue;
+            }
+
+            // ===== On：抖一段時間 =====
+            float onElapsed = 0f;
+            float stepOn = 1f / Mathf.Max(1, vibrato);
+
+            while (bossActive && onElapsed < bossShakeOnTime)
+            {
+                float x = Random.Range(-strength, strength);
+                float y = Random.Range(-strength, strength);
+                shakeTarget.anchoredPosition = _shakeOrigin + new Vector2(x, y);
+
+                yield return new WaitForSeconds(stepOn);
+                onElapsed += stepOn;
+            }
+
+            // ===== Off：回正 + 休息 =====
+            shakeTarget.anchoredPosition = _shakeOrigin;
+            yield return new WaitForSeconds(bossShakeOffTime);
         }
 
+        // 收尾
         shakeTarget.anchoredPosition = _shakeOrigin;
+
+        //_shakeOrigin = shakeTarget.anchoredPosition;
+
+        //float step = 1f / Mathf.Max(1, vibrato); // 每秒 vibrato 次
+
+        //while (bossActive)
+        //{
+        //    float x = Random.Range(-strength, strength);
+        //    float y = Random.Range(-strength, strength);
+        //    shakeTarget.anchoredPosition = _shakeOrigin + new Vector2(x, y);
+        //    yield return new WaitForSeconds(step);
+        //}
+
     }
 
     IEnumerator BossRumbleLoop(Gamepad pad, float low, float high)
     {
         while (bossActive)
         {
+            if (!bossRumblePulsed)
+            {
+                // 原本的「一直震」
+                pad.SetMotorSpeeds(low, high);
+                yield return null;
+                continue;
+            }
+
+            // 震一下
             pad.SetMotorSpeeds(low, high);
-            yield return null; // 每幀維持
+            yield return new WaitForSeconds(bossRumbleOnTime);
+
+            // 停一下
+            pad.SetMotorSpeeds(0f, 0f);
+            yield return new WaitForSeconds(bossRumbleOffTime);
+
+            //pad.SetMotorSpeeds(low, high);
+            //yield return null; // 每幀維持
         }
         pad.SetMotorSpeeds(0f, 0f);
     }
@@ -192,7 +270,7 @@ public class FeedbackSystem : MonoBehaviour
             case FeedbackType.Jumpscare:
                 PlayFlash(Color.white); // 強制白閃
                 PlaySound(jumpscareClip);
-                PlayRumble(0.6f, 1.0f, 0.25f);
+                PlayRumble(oneShotLow, oneShotHigh, oneShotDuration);
                 break;
 
             case FeedbackType.Flicker:
@@ -203,7 +281,7 @@ public class FeedbackSystem : MonoBehaviour
                 PlaySound(flickerClip);
 
                 // Flicker 通常不震，但你要也可以
-                // PlayRumble(0.2f, 0.4f, 0.08f);
+                PlayRumble(oneShotLow, oneShotHigh, oneShotDuration);
                 break;
 
             case FeedbackType.Warning:
@@ -254,8 +332,10 @@ public class FeedbackSystem : MonoBehaviour
     void PlayFlash(Color color)
     {
         if (flashOverlay == null) return;
-        StopAllCoroutines();
-        StartCoroutine(FlashRoutine(color));
+
+        if (flashCo != null) StopCoroutine(flashCo);
+
+        flashCo = StartCoroutine(FlashRoutine(color));
     }
 
     IEnumerator FlashRoutine(Color targetColor)
@@ -272,6 +352,8 @@ public class FeedbackSystem : MonoBehaviour
             yield return null;
         }
         flashOverlay.color = new Color(targetColor.r, targetColor.g, targetColor.b, 0f);
+        flashCo = null;
+
     }
 
     void PlaySound(AudioClip clip)

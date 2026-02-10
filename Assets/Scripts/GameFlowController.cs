@@ -309,8 +309,8 @@ public class GameFlowController : MonoBehaviour
                 FeedbackSystem.Instance.StartBossPersistent(
                     roarLoop: step.loopAudio,
                     enableRumble: true,          // 高回饋才會真的震（StartBossPersistent 內有擋）
-                    shakeStrength: 6f,           // 你可做成 step 欄位
-                    shakeVibrato: 25
+                    shakeStrength: 12f,           // 你可做成 step 欄位
+                    shakeVibrato: 15
                 );
             }
 

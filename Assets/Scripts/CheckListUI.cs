@@ -15,6 +15,11 @@ public class CheckListUI : MonoBehaviour
     public GameObject closedIconRoot; // 桌面上的小圖（清單icon）
     public GameObject openViewRoot; // 放大檢視物件（清單）
 
+    [Header("FocusRing Size")]
+    public Vector2 ringPadding = new Vector2(12f, 12f);   // 框比目標大一點
+    public Vector2 ringMinSize = new Vector2(32f, 32f);   // 最小 32x32
+    public bool ringMatchTargetSize = true;
+
     public GameObject focusRingDesk; // 桌面 icon 用的 FocusRing_Desk
     public GameObject focusRingCheck;  // checklist 導覽用聚焦框（FocusRing_Check）
     public GameObject focusRingDecision;
@@ -52,6 +57,9 @@ public class CheckListUI : MonoBehaviour
 
     public Button btnApprove;
     public Button btnDeny;
+
+    private bool cursorOnSubmit = false;
+
     private System.Collections.IEnumerator ReselectDecisionNextFrame()
     {
         yield return null; // 等一幀
@@ -145,21 +153,89 @@ public class CheckListUI : MonoBehaviour
     private void UpdateFocusRingByCursor()
     {
         if (focusRingCheck == null) return;
+
+        // 先處理 Submit
+        if (cursorOnSubmit)
+        {
+            UpdateFocusRingOnSubmit();
+            return;
+        }
+
         if (questions == null || questions.Length == 0) return;
 
         var q = questions[Mathf.Clamp(qIndex, 0, questions.Length - 1)];
         Toggle t = (colIndex == 0) ? q.okToggle : q.badToggle;
         if (t == null) return;
 
-        var rt = t.GetComponent<RectTransform>();
-        if (rt == null) return;
+        var targetRT = t.GetComponent<RectTransform>();
+        var ringRT = focusRingCheck.GetComponent<RectTransform>();
+        if (targetRT == null || ringRT == null) return;
 
-        // 最穩的方式：直接把 ring 的位置貼到 toggle 上
-        focusRingCheck.transform.position = rt.position;
-                
-        // 如果你覺得 ring 尺寸要跟 toggle 一樣，可加這行（可選）
-        // focusRing.GetComponent<RectTransform>().sizeDelta = rt.sizeDelta;
+        PlaceRing(ringRT, targetRT);
+        ////  如果游標在 Submit：把 ring 移到 SubmitBtn
+        //if (cursorOnSubmit)
+        //{
+        //    if (submitBtn == null) return;
+        //    var rtSubmit = submitBtn.GetComponent<RectTransform>();
+        //    if (rtSubmit == null) return;
+
+        //    focusRingCheck.transform.position = rtSubmit.position;
+        //    return;
+        //}
+
+        //if (questions == null || questions.Length == 0) return;
+
+        //var q = questions[Mathf.Clamp(qIndex, 0, questions.Length - 1)];
+        //Toggle t = (colIndex == 0) ? q.okToggle : q.badToggle;
+        //if (t == null) return;
+
+        //var rt = t.GetComponent<RectTransform>();
+        //if (rt == null) return;
+
+        //// 最穩的方式：直接把 ring 的位置貼到 toggle 上
+        //focusRingCheck.transform.position = rt.position;
     }
+
+    private void UpdateFocusRingOnSubmit()
+    {
+        if (submitBtn == null || focusRingCheck == null) return;
+
+        var submitRT = submitBtn.GetComponent<RectTransform>();
+        var ringRT = focusRingCheck.GetComponent<RectTransform>();
+        if (submitRT == null || ringRT == null) return;
+
+        PlaceRing(ringRT, submitRT);
+    }
+
+    private void PlaceRing(RectTransform ring, RectTransform target)
+    {
+        if (ring == null || target == null) return;
+
+        // 位置：跟著目標中心
+        ring.position = target.position;
+
+        if (!ringMatchTargetSize) return;
+
+        // 尺寸：用世界角落換算成 ring 父物件的 local size（最穩）
+        var parent = ring.parent as RectTransform;
+        if (parent == null) return;
+
+        Vector3[] corners = new Vector3[4];
+        target.GetWorldCorners(corners);
+
+        Vector3 p0 = parent.InverseTransformPoint(corners[0]); // 左下
+        Vector3 p2 = parent.InverseTransformPoint(corners[2]); // 右上
+
+        float localW = Mathf.Abs(p2.x - p0.x);
+        float localH = Mathf.Abs(p2.y - p0.y);
+
+        Vector2 size = new Vector2(localW, localH) + ringPadding;
+        size.x = Mathf.Max(size.x, ringMinSize.x);
+        size.y = Mathf.Max(size.y, ringMinSize.y);
+
+        ring.sizeDelta = size;
+    }
+
     private void UpdateDecisionRing()
     {
         if (focusRingDecision == null) return;
@@ -305,8 +381,12 @@ public class CheckListUI : MonoBehaviour
         // --- 3) ○ 確認：把目前格子打勾（Toggle 互斥你已 WireExclusive 會處理）---
         if (pad.buttonEast.wasPressedThisFrame)
         {
-            if (allAnswered && submitBtn != null && submitBtn.activeSelf)
+
+            // 如果游標在 Submit 且 allAnswered 才能送出
+            if (cursorOnSubmit && allAnswered && submitBtn != null && submitBtn.activeSelf) {
                 SubmitForm();
+            }
+
             else
                 ApplyAnswerByCursor();
 
@@ -318,9 +398,27 @@ public class CheckListUI : MonoBehaviour
 
     private void MoveQuestion(int delta)
     {
-        qIndex = Mathf.Clamp(qIndex + delta, 0, questions.Length - 1);
-        // 你如果有要做「小 focusRing」可以從這裡更新位置
-        UpdateFocusRingByCursor();
+        bool allAnswered = questions.All(q => q.HasAnswer);
+
+        // 允許的最大索引：題目最後一題 或 Submit（若 allAnswered）
+        int maxIndex = allAnswered ? questions.Length : questions.Length - 1;
+
+        int cur = cursorOnSubmit ? questions.Length : qIndex;
+        cur = Mathf.Clamp(cur + delta, 0, maxIndex);
+
+        if (cur == questions.Length)
+        {
+            cursorOnSubmit = true;
+        }
+        else
+        {
+            cursorOnSubmit = false;
+            qIndex = cur;
+        }
+
+        //qIndex = Mathf.Clamp(qIndex + delta, 0, questions.Length - 1);
+
+        UpdateFocusRingByCursor();        // 「小 focusRing」可以從這裡更新位置
 
     }
 
@@ -338,6 +436,15 @@ public class CheckListUI : MonoBehaviour
 
         bool allAnswered = questions.All(q => q.HasAnswer);
         submitBtn.SetActive(allAnswered);
+
+        // 如果 submit 被關掉，游標不能停在 submit
+        if (!allAnswered && cursorOnSubmit)
+        {
+            cursorOnSubmit = false;
+            qIndex = Mathf.Clamp(qIndex, 0, questions.Length - 1);
+            UpdateFocusRingByCursor();
+        }
+
     }
 
     // Toggle 更新時檢查是否全填
