@@ -6,6 +6,7 @@ Shader "UI/SpotlightHole"
         _HoleCenter ("Hole Center (0-1)", Vector) = (0.5, 0.5, 0, 0)
         _HoleRadius ("Hole Radius", Float) = 0.12
         _Softness ("Softness", Float) = 0.02
+        _MainTex ("Main Texture", 2D) = "white" {}
     }
     SubShader
     {

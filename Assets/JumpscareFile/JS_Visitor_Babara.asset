@@ -21,5 +21,5 @@ MonoBehaviour:
     jumpscareImage: {fileID: 21300000, guid: 9a01f0a4cf158dd4b9a281bab755c2eb, type: 3}
     secondaryOverrideCamIndex: 1
     secondaryOverrideImage: {fileID: 21300000, guid: 805755093a93bbb40921a09d6f34dc82, type: 3}
-    loopAudio: {fileID: 8300000, guid: fa46105681e9e664784d1f53ece50593, type: 3}
+    loopAudio: {fileID: 8300000, guid: 5904e8d0de02f444f8edb2e6b7d297eb, type: 3}
     persistentUntilDecision: 1

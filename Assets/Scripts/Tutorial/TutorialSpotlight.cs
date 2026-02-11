@@ -4,7 +4,7 @@ using UnityEngine.UI;
 public class TutorialSpotlight : MonoBehaviour
 {
     [Header("Refs")]
-    public RawImage overlayImage;                 // 全螢幕 Image（掛 Spotlight 材質）
+    public Image overlayImage;                 // 全螢幕 Image（掛 Spotlight 材質）
     public RectTransform target;               // 要聚焦的 UI（手冊 icon）
     public Canvas rootCanvas;                  // 你的主 Canvas（用來抓正確 camera）
 
@@ -16,7 +16,7 @@ public class TutorialSpotlight : MonoBehaviour
 
     void Awake()
     {
-        if (overlayImage == null) overlayImage = GetComponentInChildren<RawImage>(true);
+        if (overlayImage == null) overlayImage = GetComponentInChildren<Image>(true);
         if (rootCanvas == null) rootCanvas = GetComponentInParent<Canvas>();
 
         if (overlayImage != null)

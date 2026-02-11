@@ -5,9 +5,9 @@ public class ResultsUI : MonoBehaviour
 {
     //public TMP_Text sessionIdText;
     //public TMP_Text participantIdText;
-    public TMP_Text buildVersionText;
-    public TMP_Text correctText;
-    public TMP_Text wrongText;
+    public TMP_Text buildVersion;
+    public TMP_Text correct_answer;
+    public TMP_Text wrong_answer;
 
     void Start()
     {
@@ -21,9 +21,9 @@ public class ResultsUI : MonoBehaviour
         //sessionIdText.text = r.sessionId;
         //participantIdText.text = r.participantId;
 
-        buildVersionText.text = r.feedbackCondition.ToString();
-        correctText.text = r.CorrectCount().ToString();
-        wrongText.text = r.WrongCount().ToString();
+        buildVersion.text = r.feedbackCondition.ToString();
+        correct_answer.text = r.CorrectCount().ToString();
+        wrong_answer.text = r.WrongCount().ToString();
     }
     public void BackToMainMenu()
     {

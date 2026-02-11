@@ -17,6 +17,11 @@ public class FeedbackSystem : MonoBehaviour
     public static FeedbackSystem Instance;
     public static int FeedbackLevel = 0;
 
+#if UNITY_EDITOR
+    [Header("DEBUG (Editor Only)")]
+    public bool debugForceHighInEditor = true;
+#endif
+
     [Header("UI 閃爍")]
     public Image flashOverlay;
     public float flashDuration = 0.3f; // 稍微增長一點，效果更柔和
@@ -253,6 +258,12 @@ public class FeedbackSystem : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+
+#if UNITY_EDITOR
+        if (debugForceHighInEditor)
+            FeedbackLevel = 2;   // 0=Low, 1=Mid, 2=High
+#endif
+
         if (flashOverlay != null)
         {
             flashOverlay.gameObject.SetActive(true);

@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.InputSystem;
 
 
@@ -14,7 +14,7 @@ public class TutorialManager : MonoBehaviour
     private bool waitingForTutorialEnd = false;
 
     public TutorialSpotlight spotlight;
-    public ManualUI manualUI; // Åı§A¯à§ì closedIconRoot
+    public ManualUI manualUI; // è®“ä½ èƒ½æŠ“ closedIconRoot
 
 
     private void Awake()
@@ -29,7 +29,7 @@ public class TutorialManager : MonoBehaviour
 
     public void StartTutorial()
     {
-        // ¡¹ ±Ğ¾Ç¤w§¹¦¨ ¡÷ §¹¥ş°±¥Î
+        // â˜… æ•™å­¸å·²å®Œæˆ â†’ å®Œå…¨åœç”¨
         if (TutorialFinished)
         {
             gameObject.SetActive(false);
@@ -42,7 +42,7 @@ public class TutorialManager : MonoBehaviour
 
     private System.Collections.IEnumerator ConsumeOneFrame()
     {
-        // ¼È®ÉÂê¦í¡AÅıªÅ¥ÕÁä¤£·|¬ï³z¥h¶} ID/Manual/Checklist
+        // æš«æ™‚é–ä½ï¼Œè®“ç©ºç™½éµä¸æœƒç©¿é€å»é–‹ ID/Manual/Checklist
         bool prevGlobal = InteractionLock.GlobalLock;
         bool prevDialogue = InteractionLock.DialogueLock;
 
@@ -57,7 +57,7 @@ public class TutorialManager : MonoBehaviour
 
     public void GoToStep(int s)
     {
-        if (TutorialFinished) return; // ¡¹ ­Y¤w§¹¦¨«h¤£¦A°õ¦æ¥ô¦ó¨BÆJ
+        if (TutorialFinished) return; // â˜… è‹¥å·²å®Œæˆå‰‡ä¸å†åŸ·è¡Œä»»ä½•æ­¥é©Ÿ
 
         step = s;
 
@@ -82,7 +82,7 @@ public class TutorialManager : MonoBehaviour
         FocusManager.FocusLock = true;
 
         dialogueManager.MoveToBottom();
-        dialogueManager.ShowDialogue("¬İ¨Ó§A´N¬O·s¨ÓªººÊ¹î¤H­û¡A±µ¤U¨Ó±N¤@¨B¨B±a§A¶i¦æÀË¬d¬yµ{¡C\n½Ğ«öªÅ¥ÕÁäÄ~Äò¡C");
+        dialogueManager.ShowDialogue("çœ‹ä¾†ä½ å°±æ˜¯æ–°ä¾†çš„ç›£å¯Ÿäººå“¡ï¼Œæ¥ä¸‹ä¾†å°‡ä¸€æ­¥æ­¥å¸¶ä½ é€²è¡Œæª¢æŸ¥æµç¨‹ã€‚\nè«‹æŒ‰ ã€ â—‹ ã€‘ ç¹¼çºŒã€‚");
     }
 
     private void Step1_OpenID()
@@ -95,7 +95,7 @@ public class TutorialManager : MonoBehaviour
         FocusManager.Instance?.ResetFocus();
 
         dialogueManager.MoveToBottom();
-        dialogueManager.ShowDialogue("­º¥ı¡A½Ğ«öªÅ¥ÕÁä¥´¶}¨­¤ÀÃÒ¥ó¡A½T»{°ò¥»¸ê®Æ¡C");
+        dialogueManager.ShowDialogue("é¦–å…ˆï¼Œè«‹æŒ‰ ã€ â—‹ ã€‘ æ‰“é–‹èº«åˆ†è­‰ä»¶ï¼Œç¢ºèªåŸºæœ¬è³‡æ–™ã€‚");
         dialogueManager.nextKeyHint.SetActive(false);
     }
 
@@ -105,7 +105,7 @@ public class TutorialManager : MonoBehaviour
         FocusManager.FocusLock = true;
 
         dialogueManager.MoveToBottom();
-        dialogueManager.ShowDialogue("½Ğ½T«O¨­¤ÀÃÒÀY¶K»P¥»¤H¬Û²Å¡A¥B¨­¤ÀÃÒ©|¦b¦³®Ä´Á­­¤º¡C\nÀË¬d§¹²¦½Ğ«ö ESC Ãö³¬ÃÒ¥ó");
+        dialogueManager.ShowDialogue("è«‹ç¢ºä¿èº«åˆ†è­‰é ­è²¼èˆ‡æœ¬äººç›¸ç¬¦ï¼Œä¸”èº«åˆ†è­‰å°šåœ¨æœ‰æ•ˆæœŸé™å…§ã€‚\næª¢æŸ¥å®Œç•¢è«‹æŒ‰ ã€ Ã— ã€‘ é—œé–‰è­‰ä»¶");
         dialogueManager.nextKeyHint.SetActive(false);
     }
 
@@ -113,10 +113,10 @@ public class TutorialManager : MonoBehaviour
     {
         InteractionLock.GlobalLock = false;
         FocusManager.FocusLock = false;
-        InteractionLock.CameraLock = false;  // ³o¦æ¬OÃöÁä
+        InteractionLock.CameraLock = false;  // é€™è¡Œæ˜¯é—œéµ
 
         dialogueManager.MoveToBottom();
-        dialogueManager.ShowDialogue("½Ğ¥Î Q/E ¤Á´«¨ì¤U­ÓºÊµø¾¹µe­±¡A½T»{¤JÃöªÌ²´·úª¬ªp¡C\n¬°½T«O¹ï¶H¬°¤HÃş¡A¾ÚÆ[¹î¡A¡u°°¥Íª«¡vªº²´¥Õ·|¦³¬õ¦â´³ÂI¡C\n½Ğ¦h¥[ª`·N¡C");
+        dialogueManager.ShowDialogue("è«‹ç”¨ ã€ R1 ã€‘ åˆ‡æ›åˆ°ä¸‹å€‹ç›£è¦–å™¨ç•«é¢ï¼Œç¢ºèªå…¥é—œè€…çœ¼ç›ç‹€æ³ã€‚\nç‚ºç¢ºä¿å°è±¡ç‚ºäººé¡ï¼Œæ“šè§€å¯Ÿï¼Œå¤šæ•¸ã€Œå½ç”Ÿç‰©ã€çš„çœ¼ç™½æœƒæœ‰ç´…è‰²æ–‘é»ã€‚\nè«‹å¤šåŠ æ³¨æ„ã€‚");
         dialogueManager.nextKeyHint.SetActive(false);
     }
 
@@ -125,7 +125,7 @@ public class TutorialManager : MonoBehaviour
         InteractionLock.GlobalLock = false;
 
         dialogueManager.MoveToBottom();
-        dialogueManager.ShowDialogue("«Ü¦n¡A¦A½Ğ¤Á¨ì¤U¤@­Óµe­±¡C");
+        dialogueManager.ShowDialogue("å¾ˆå¥½ï¼Œå†è«‹åˆ‡åˆ°ä¸‹ä¸€å€‹ç•«é¢ã€‚");
         dialogueManager.nextKeyHint.SetActive(false);
     }
 
@@ -138,11 +138,11 @@ public class TutorialManager : MonoBehaviour
 
         dialogueManager.MoveToBottom();
         dialogueManager.ShowDialogue(
-            "°£¤F²´·ú¡A¤]½Ğª`·N¤ú¾¦¬O§_¡u¹L«×¼ä¥Õ¾ã»ô¡v\n" +
-            "±µµÛ·|¶i¤J²M³æÀË¬d±Ğ¾Ç¡A½Ğ¤Á¦^²Ä¤@­Óµe­±¡C"
+            "é™¤äº†çœ¼ç›ï¼Œä¹Ÿè«‹æ³¨æ„ç‰™é½’æ˜¯å¦ã€Œéåº¦æ½”ç™½æ•´é½Šã€\n" +
+            "æ¥è‘—æœƒé€²å…¥æ¸…å–®æª¢æŸ¥æ•™å­¸ï¼Œè«‹ç”¨ ã€ L1 ã€‘ åˆ‡å›ç¬¬ä¸€å€‹ç•«é¢ã€‚"
         );
 
-        // ¡¹ÃöÁä¡GStep5 ¤£¤¹³\¥ÎªÅ¥ÕÁä«e¶i¡AÁ×§KªÅ¥ÕÁä³Q®³¥h¶} checklist ®É°½¸õ step
+        // â˜…é—œéµï¼šStep5 ä¸å…è¨±ç”¨ç©ºç™½éµå‰é€²ï¼Œé¿å…ç©ºç™½éµè¢«æ‹¿å»é–‹ checklist æ™‚å·è·³ step
         dialogueManager.nextKeyHint.SetActive(false);
     }
 
@@ -151,7 +151,7 @@ public class TutorialManager : MonoBehaviour
         InteractionLock.GlobalLock = false;
 
         dialogueManager.MoveToBottom();
-        dialogueManager.ShowDialogue("½Ğ¥Î A/D ¤Á´«¨ì Checklist ¨Ã«öªÅ¥ÕÁä¶}±Ò¡C");
+        dialogueManager.ShowDialogue("è«‹ç”¨ ã€ å·¦ä¸‹é¡æ¯”æ–æ¡¿ ã€‘ åˆ‡æ›åˆ° ã€å³å´æª¢æŸ¥æ¸…å–®ã€‘ ä¸¦æŒ‰ ã€ â—‹ ã€‘ é–‹å•Ÿã€‚");
 
         dialogueManager.nextKeyHint.SetActive(false);
     }
@@ -163,7 +163,7 @@ public class TutorialManager : MonoBehaviour
         InteractionLock.GlobalLock = false;
 
         dialogueManager.MoveToBottom();
-        dialogueManager.ShowDialogue("½Ğ±N©Ò¦³ÀË¬d¶µ¥Ø¤Ä¿ï§¹¦¨¡C");
+        dialogueManager.ShowDialogue("è«‹åˆ©ç”¨ ã€ å·¦ä¸‹é¡æ¯”æ–æ¡¿ ã€‘ åŠ ã€ â—‹ ã€‘ å°‡æ‰€æœ‰æª¢æŸ¥é …ç›®å‹¾é¸å®Œæˆã€‚");
 
         dialogueManager.nextKeyHint.SetActive(false);
     }
@@ -174,8 +174,8 @@ public class TutorialManager : MonoBehaviour
 
         dialogueManager.MoveToBottom();
         dialogueManager.ShowDialogue(
-        "½Ğ«ö¤U¡uSubmit¡v°e¥X¡A±µµÛ¿ï¾Ü¡y¤¹³\¡z©Î¡y¤£¤¹³\¡z¤J¹Ò¥H§¹¦¨¼f¬d¡C\n" +
-        "§A¤]¥i¥H¥ıÃö³¬²M³æ¡AÆ[¹î«á¦A¨M©w¡C"
+        "è«‹æŒ‰ä¸‹ ã€ Submit ã€‘ é€å‡ºï¼Œæ¥è‘—é¸æ“‡ ã€ å…è¨± ã€‘ æˆ– ã€ ä¸å…è¨± ã€‘ å…¥å¢ƒä»¥å®Œæˆå¯©æŸ¥ã€‚\n" +
+        "ä½ ä¹Ÿå¯ä»¥å…ˆæŒ‰ ã€ Ã— ã€‘ é—œé–‰æ¸…å–®ï¼Œè§€å¯Ÿå¾Œå†æ±ºå®šã€‚"
         );
 
         dialogueManager.nextKeyHint.SetActive(false);
@@ -189,7 +189,7 @@ public class TutorialManager : MonoBehaviour
             spotlight.Show(rt);
         }
 
-        // ¥u¦b³Ì«á¤@¨B¡A§â¤â¥U´£¥Ü«G°_
+        // åªåœ¨æœ€å¾Œä¸€æ­¥ï¼ŒæŠŠæ‰‹å†Šæç¤ºäº®èµ·
         if (FocusManager.Instance != null && FocusManager.Instance.manualUI != null)
         {
             FocusManager.Instance.manualUI.SetHintGlow(true);
@@ -201,9 +201,9 @@ public class TutorialManager : MonoBehaviour
 
         dialogueManager.MoveToBottom();
         dialogueManager.ShowDialogue(
-            "°µ±o¤£¿ù¡A·s¤H¡C­Y¦³»İ­n¡A¥i¬d¬İ¥ª°¼ªº¤â¥U¡C\n" +
-            "°O¦í¡K¡K¡u°°¥Íª«¡v¾Õªø¼Ò¥é¡A§Aªº¨C¤@­Ó§PÂ_¡A³£·|¼vÅT¨ì«°¥«ªº¦w¥ş¡C\n" +
-            "«O«ùÄµÄ±§a¡C"
+            "åšå¾—ä¸éŒ¯ï¼Œæ–°äººã€‚è‹¥æœ‰éœ€è¦ï¼Œå¯æŸ¥çœ‹å·¦å´çš„æ‰‹å†Šã€‚\n" +
+            "è¨˜ä½â€¦â€¦ã€Œå½ç”Ÿç‰©ã€æ“…é•·æ¨¡ä»¿ï¼Œä½ çš„æ¯ä¸€å€‹åˆ¤æ–·ï¼Œéƒ½æœƒå½±éŸ¿åˆ°åŸå¸‚çš„å®‰å…¨ã€‚\n" +
+            "ä¿æŒè­¦è¦ºå§ã€‚"
         );
 
         waitingForTutorialEnd = true;
@@ -247,7 +247,7 @@ public class TutorialManager : MonoBehaviour
 
     private void HandleCamChanged(int camIndex)
     {
-        // step3: ¤Á¨ì CAM002 (1)
+        // step3: åˆ‡åˆ° CAM002 (1)
         if (step == 3 && camIndex == 1)
         {
             step = 4;
@@ -255,7 +255,7 @@ public class TutorialManager : MonoBehaviour
             return;
         }
 
-        // step4: ¥²¶·¤Á¨ì CAM003 (2)
+        // step4: å¿…é ˆåˆ‡åˆ° CAM003 (2)
         if (step == 4 && camIndex == 2)
         {
             step = 5;
@@ -263,7 +263,7 @@ public class TutorialManager : MonoBehaviour
             return;
         }
 
-        // step5: ¥²¶·¤Á¦^ CAM001 (0)
+        // step5: å¿…é ˆåˆ‡å› CAM001 (0)
         if (step == 5 && camIndex == 0)
         {
             step = 6;
@@ -292,7 +292,7 @@ public class TutorialManager : MonoBehaviour
     {
         if (step != 8) return;
 
-        Debug.Log("Submit ³Q«ö¤U¡]±Ğ¾Ç¼Ò¦¡ Step8¡^");
+        Debug.Log("Submit è¢«æŒ‰ä¸‹ï¼ˆæ•™å­¸æ¨¡å¼ Step8ï¼‰");
     }
 
     public void AdvanceFromDecision()
@@ -305,12 +305,12 @@ public class TutorialManager : MonoBehaviour
 
     private void Update()
     {
-        // ±Ğ¾Ç¨BÆJªºªÅ¥ÕÁä
+        // æ•™å­¸æ­¥é©Ÿçš„ç©ºç™½éµ
         if (!TutorialFinished && dialogueManager.nextKeyHint.activeSelf)
         {
             if (Input.GetKeyDown(KeyCode.Space) || (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame))
             {
-                StartCoroutine(ConsumeOneFrame());   // ÃöÁä¡G®ø¯Ó¤@´V
+                StartCoroutine(ConsumeOneFrame());   // é—œéµï¼šæ¶ˆè€—ä¸€å¹€
                 step++;
                 GoToStep(step);
             }
@@ -319,43 +319,43 @@ public class TutorialManager : MonoBehaviour
         //if (!TutorialFinished)
         //    CheckCameraProgress();
 
-        // ¡¹ ³Ì«áµ¥«İª±®a«öªÅ¥ÕÁäµ²§ô±Ğ¾Ç
+        // â˜… æœ€å¾Œç­‰å¾…ç©å®¶æŒ‰ç©ºç™½éµçµæŸæ•™å­¸
         if (waitingForTutorialEnd)
         {
             if (Input.GetKeyDown(KeyCode.Space) || (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame))
             {
-                //// ¥ıÂê¦í¡AÁ×§K¦P¤@ÁûÁä³Q Checklist ¦P´V¦Y±¼
+                //// å…ˆé–ä½ï¼Œé¿å…åŒä¸€é¡†éµè¢« Checklist åŒå¹€åƒæ‰
                 //InteractionLock.GlobalLock = true;
 
                 dialogueManager.HideDialogue();
 
-                if (spotlight != null) spotlight.Hide(); // ³o¸Ì¤~Ãö±¼ spotlight
+                if (spotlight != null) spotlight.Hide(); // é€™è£¡æ‰é—œæ‰ spotlight
 
-                // ¤£­n¦b³o¸Ì§â ring Ãö±¼¡A§ï¦¨¡u¤Á¦^¥¿±`»EµJ¨ì¤â¥U¡v
+                // ä¸è¦åœ¨é€™è£¡æŠŠ ring é—œæ‰ï¼Œæ”¹æˆã€Œåˆ‡å›æ­£å¸¸èšç„¦åˆ°æ‰‹å†Šã€
                 if (FocusManager.Instance != null)
                 {
-                    // ¥ı§â±Ğ¾Ç¥Î±j¨î glow Ãö±¼¡]Á×§K¤§«á¸ò Focus() ¥´¬[¡^
+                    // å…ˆæŠŠæ•™å­¸ç”¨å¼·åˆ¶ glow é—œæ‰ï¼ˆé¿å…ä¹‹å¾Œè·Ÿ Focus() æ‰“æ¶ï¼‰
                     if (FocusManager.Instance.manualUI != null)
                         FocusManager.Instance.manualUI.SetHintGlow(false);
 
-                    // ±j¨î§âµJÂI«ü©w¦b¤â¥U¡]ª±®a¥ß¨èª¾¹D¤U¤@¨B¡^
+                    // å¼·åˆ¶æŠŠç„¦é»æŒ‡å®šåœ¨æ‰‹å†Šï¼ˆç©å®¶ç«‹åˆ»çŸ¥é“ä¸‹ä¸€æ­¥ï¼‰
                     FocusManager.Instance.FocusManual();
                 }
 
-                //// §â¤â¥U´£¥Ü¿Oº¶±¼¡]Á×§K¤@ª½«G¡^
+                //// æŠŠæ‰‹å†Šæç¤ºç‡ˆç†„æ‰ï¼ˆé¿å…ä¸€ç›´äº®ï¼‰
                 //if (FocusManager.Instance != null && FocusManager.Instance.manualUI != null)
                 //    FocusManager.Instance.manualUI.SetHintGlow(false);
                 TutorialFinished = true;
 
-                // ¥Î coroutine ©µ«á¸ÑÂê¡AÁ×§K¦P´VªÅ¥ÕÁä¬ï³z¥h¶}¤â¥U
+                // ç”¨ coroutine å»¶å¾Œè§£é–ï¼Œé¿å…åŒå¹€ç©ºç™½éµç©¿é€å»é–‹æ‰‹å†Š
                 StartCoroutine(EndTutorialRoutine());
 
-                // ¸ÑÂê
+                // è§£é–
                 //InteractionLock.GlobalLock = false;
                 //InteractionLock.DialogueLock = false;
                 //FocusManager.FocusLock = false;
 
-                // ¡¹·s¼W¡G±Ğ¾Çµ²§ô«á¡A§â¥¿±`µJÂI«ü©w¨ì¤â¥U¡]Åı ring ¯d¤U¨Ó¡^
+                // â˜…æ–°å¢ï¼šæ•™å­¸çµæŸå¾Œï¼ŒæŠŠæ­£å¸¸ç„¦é»æŒ‡å®šåˆ°æ‰‹å†Šï¼ˆè®“ ring ç•™ä¸‹ä¾†ï¼‰
                 //FocusManager.Instance?.FocusManual();
 
                 //gameObject.SetActive(false);
@@ -367,14 +367,14 @@ public class TutorialManager : MonoBehaviour
     }
     //private System.Collections.IEnumerator EndTutorialRoutine()
     //{
-    //    yield return null;                 // µ¥¤@´V¡AÅıµ²§ôÁä¤£·|¦P´VÄ²µo Checklist
-    //    InteractionLock.GlobalLock = false; // ¸ÑÂê¡A«ì´_¾Ş§@
-    //    gameObject.SetActive(false);        // ³Ì«á¦AÃö±¼ Tutorial
+    //    yield return null;                 // ç­‰ä¸€å¹€ï¼Œè®“çµæŸéµä¸æœƒåŒå¹€è§¸ç™¼ Checklist
+    //    InteractionLock.GlobalLock = false; // è§£é–ï¼Œæ¢å¾©æ“ä½œ
+    //    gameObject.SetActive(false);        // æœ€å¾Œå†é—œæ‰ Tutorial
     //}
 
     private System.Collections.IEnumerator EndTutorialRoutine()
     {
-        // ³o¤@´V¥ıºû«ùÂê¦í¡AÅıªÅ¥ÕÁä¤£·|³Q Manual/Checklist/IDCard ¦Y¨ì
+        // é€™ä¸€å¹€å…ˆç¶­æŒé–ä½ï¼Œè®“ç©ºç™½éµä¸æœƒè¢« Manual/Checklist/IDCard åƒåˆ°
         yield return null;
 
         InteractionLock.GlobalLock = false;
