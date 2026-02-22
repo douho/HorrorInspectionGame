@@ -174,7 +174,8 @@ public class TutorialManager : MonoBehaviour
 
         dialogueManager.MoveToBottom();
         dialogueManager.ShowDialogue(
-        "請按下 【 Submit 】 送出，接著選擇 【 允許 】 或 【 不允許 】 入境以完成審查。\n" +
+        "請按下 【 Submit 】 送出，確認是人類的話選擇【 綠色按鈕 】\n" +
+        "認為是非人類的的話選擇【 紅色按鈕 】\n" +
         "你也可以先按 【 × 】 關閉清單，觀察後再決定。"
         );
 
