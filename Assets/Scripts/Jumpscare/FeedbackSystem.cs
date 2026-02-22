@@ -305,6 +305,7 @@ public class FeedbackSystem : MonoBehaviour
             case FeedbackType.LightShake:
                 // 只做視覺微晃（音效要不要另加看你需求）
                 StartShake(shakeDuration, shakeStrength, shakeVibrato);
+                PlayRumble(oneShotLow, oneShotHigh, oneShotDuration);
                 break;
         }
     }
