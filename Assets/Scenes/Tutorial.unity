@@ -2974,12 +2974,13 @@ MonoBehaviour:
   flashDuration: 0.2
   audioSource: {fileID: 576229455}
   jumpscareClip: {fileID: 8300000, guid: c9730faf64f0cd144997f39c5745789e, type: 3}
+  smallClip: {fileID: 8300000, guid: c9c3dce2ef82844438c6c5b11f9a56fd, type: 3}
   flickerClip: {fileID: 8300000, guid: fccd82be0c425c847b23967217cfd9da, type: 3}
   warningClip: {fileID: 8300000, guid: ec86652f9ba88b8429bbc323289db458, type: 3}
   flickerColor: {r: 1, g: 1, b: 1, a: 1}
   flickerDuration: 0.12
   shakeTarget: {fileID: 1763947396}
-  shakeDuration: 0.18
+  shakeDuration: 0.3
   shakeStrength: 6
   shakeVibrato: 18
   bossShakePulsed: 1

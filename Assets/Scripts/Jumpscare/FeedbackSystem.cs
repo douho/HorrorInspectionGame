@@ -29,6 +29,7 @@ public class FeedbackSystem : MonoBehaviour
     [Header("音效")]
     public AudioSource audioSource;
     public AudioClip jumpscareClip;
+    public AudioClip smallClip;       // 小驚嚇音效
     public AudioClip flickerClip;
     public AudioClip warningClip;   // Warning 音效（可不填）
 
@@ -304,8 +305,10 @@ public class FeedbackSystem : MonoBehaviour
 
             case FeedbackType.LightShake:
                 // 只做視覺微晃（音效要不要另加看你需求）
+                PlaySound(smallClip); // 可以有個小驚嚇音效
                 StartShake(shakeDuration, shakeStrength, shakeVibrato);
                 PlayRumble(oneShotLow, oneShotHigh, oneShotDuration);
+
                 break;
         }
     }
