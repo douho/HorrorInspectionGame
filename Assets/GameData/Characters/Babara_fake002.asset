@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01a3ac9a359a788439c2b7693e096f52, type: 3}
+  m_Name: Babara_fake002
+  m_EditorClassIdentifier: 
+  characterId: 0
+  displayName: 
+  protrait: {fileID: 0}
+  idCard: {fileID: 11400000, guid: d75ee98b615b6e14898467c0f51e0326, type: 2}
+  shouldAllow: 0
+  silhouetteSprite: {fileID: 21300000, guid: 44fafdf0fbce0134b9d6e404a96d5c11, type: 3}
+  jumpScareSequence: {fileID: 0}
+  monitorImages:
+  - {fileID: 21300000, guid: 5b515126442cae54cbe3294a654f0972, type: 3}
+  - {fileID: 21300000, guid: a24b44fbeac10a541af49abfd64fc706, type: 3}
+  - {fileID: 0}

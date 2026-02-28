@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01a3ac9a359a788439c2b7693e096f52, type: 3}
+  m_Name: Tatsumi_fake002
+  m_EditorClassIdentifier: 
+  characterId: 0
+  displayName: 
+  protrait: {fileID: 0}
+  idCard: {fileID: 0}
+  shouldAllow: 0
+  silhouetteSprite: {fileID: 21300000, guid: 1b3e2f7d6d59cb64faed83f67bd18c8f, type: 3}
+  jumpScareSequence: {fileID: 0}
+  monitorImages:
+  - {fileID: 0}
+  - {fileID: 21300000, guid: acc18e94f15454444a9eefac6a6768fd, type: 3}
+  - {fileID: 21300000, guid: 96ff4fc8eeb5333468f1adfa522454a3, type: 3}
