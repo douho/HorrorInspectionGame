@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e3141268d32fd684aa3f67e505a8ee16, type: 3}
-  m_Name: JS_Visitor_Tatsumi
+  m_Name: JS_Visitor_Babara002
   m_EditorClassIdentifier: 
   triggerCondition: 0
   steps:
   - feedbackType: 2
     delay: 0.05
-    triggerCamIndex: 1
+    triggerCamIndex: 2
     overrideImage: {fileID: 0}
     jumpscareImage: {fileID: 0}
     secondaryOverrideCamIndex: 0

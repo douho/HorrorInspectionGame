@@ -15,11 +15,11 @@ MonoBehaviour:
   characterId: 0
   displayName: 
   protrait: {fileID: 0}
-  idCard: {fileID: 0}
+  idCard: {fileID: 11400000, guid: 3859e9ce8ffff7c4fb35f262e4f4794b, type: 2}
   shouldAllow: 0
   silhouetteSprite: {fileID: 21300000, guid: 6ccc559cdd908db44be6f878a7b74e59, type: 3}
-  jumpScareSequence: {fileID: 0}
+  jumpScareSequence: {fileID: 11400000, guid: 1e052815950c2ba479eafdc2fdf06bca, type: 2}
   monitorImages:
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 21300000, guid: 2593c00fc5c7ca44ba398bdd25864bd4, type: 3}
+  - {fileID: 21300000, guid: 68372d5bece275649aea5c59599be182, type: 3}
   - {fileID: 21300000, guid: ffd9be3a09ba6414db58cd2ab126f5bf, type: 3}
