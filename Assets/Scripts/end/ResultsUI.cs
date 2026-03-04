@@ -1,5 +1,6 @@
-using UnityEngine;
+using System;
 using TMPro;
+using UnityEngine;
 
 public class ResultsUI : MonoBehaviour
 {
@@ -8,6 +9,8 @@ public class ResultsUI : MonoBehaviour
     public TMP_Text buildVersion;
     public TMP_Text correct_answer;
     public TMP_Text wrong_answer;
+
+    public TMP_Text totalTime;
 
     void Start()
     {
@@ -24,6 +27,11 @@ public class ResultsUI : MonoBehaviour
         buildVersion.text = r.feedbackCondition.ToString();
         correct_answer.text = r.CorrectCount().ToString();
         wrong_answer.text = r.WrongCount().ToString();
+
+        float t = r.sessionElapsedSec;
+        TimeSpan ts = TimeSpan.FromSeconds(t);
+        totalTime.text = $"{ts.Minutes:00}:{ts.Seconds:00}";
+
     }
     public void BackToMainMenu()
     {

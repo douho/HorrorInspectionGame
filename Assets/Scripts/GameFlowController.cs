@@ -377,6 +377,9 @@ public class GameFlowController : MonoBehaviour
 
     void ShowEnding()
     {
+        if (GameSessionRecorder.Instance != null)
+            GameSessionRecorder.Instance.StopSessionTimer();
+
         SceneManager.LoadScene("ResultsScene");
     }
 

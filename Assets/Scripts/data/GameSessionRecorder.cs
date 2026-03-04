@@ -35,6 +35,25 @@ public class GameSessionRecorder : MonoBehaviour
     private DecisionRecord current;
     private float roundStartTime;
 
+    // ===== Session Timer（整體花費時間）=====
+    private bool sessionTimerStarted = false;
+    private float sessionStartTime = 0f;
+    public float sessionElapsedSec { get; private set; } = 0f;
+
+    public void StartSessionTimerIfNeeded()
+    {
+        if (sessionTimerStarted) return;
+        sessionTimerStarted = true;
+        sessionStartTime = Time.time;
+    }
+
+    public void StopSessionTimer()
+    {
+        if (!sessionTimerStarted) return;
+        sessionElapsedSec = Time.time - sessionStartTime;
+    }
+
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -53,6 +72,12 @@ public class GameSessionRecorder : MonoBehaviour
         records.Clear();
         current = null;
         roundStartTime = 0f;
+
+        // 清 session timer
+        sessionTimerStarted = false;
+        sessionStartTime = 0f;
+        sessionElapsedSec = 0f;
+
 
         sessionId = Guid.NewGuid().ToString();
     }

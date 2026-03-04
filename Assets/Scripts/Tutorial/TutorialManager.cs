@@ -306,6 +306,16 @@ public class TutorialManager : MonoBehaviour
 
     private void Update()
     {
+        // 教學關卡第一個按鍵 → 啟動計時（只會啟動一次）
+        if (!TutorialFinished)
+        {
+            if (Input.GetKeyDown(KeyCode.Space) || (Gamepad.current != null && Gamepad.current.buttonEast.wasPressedThisFrame))
+            {
+                if (GameSessionRecorder.Instance != null)
+                    GameSessionRecorder.Instance.StartSessionTimerIfNeeded();
+            }
+        }
+
         // 教學步驟的空白鍵
         if (!TutorialFinished && dialogueManager.nextKeyHint.activeSelf)
         {
@@ -386,26 +396,4 @@ public class TutorialManager : MonoBehaviour
     }
 
 
-    //private void CheckCameraProgress()
-    //{
-    //    if (camController == null) return;
-
-    //    int camIndex = camController.currentCamIndex;
-
-    //    if (step == 3 && camIndex == 1)
-    //    {
-    //        step++;
-    //        GoToStep(step);
-    //    }
-    //    else if (step == 4 && camIndex == 2)
-    //    {
-    //        step++;
-    //        GoToStep(step);
-    //    }
-    //    else if (step == 5 && camIndex == 0)
-    //    {
-    //        step++;
-    //        GoToStep(step);
-    //    }
-    //}
 }
