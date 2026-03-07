@@ -197,10 +197,17 @@ public class GameFlowController : MonoBehaviour
     {
         if (characterDB == null) return;
 
-        // 你需要能拿到總數：依你的 CharacterDatabase 實作選一種
-        // 假設你有：characterDB.Count 或 characterDB.GetCount()
-        int total = characterDB.entries.Count; // ←如果這行報錯，改成你資料庫真正的總數取得方式
+        // 找最後一位：一直 GetByIndex(i) 直到 null
+        int i = 0;
+        while (true)
+        {
+            var c = characterDB.GetByIndex(i);
+            if (c == null) break;
+            i++;
+            if (i > 9999) break; // 保險，避免死迴圈
+        }
 
+        int total = i;
         int lastIndex = total - 1;
         if (lastIndex < 0) return;
 
@@ -211,22 +218,21 @@ public class GameFlowController : MonoBehaviour
             startNextCo = null;
         }
 
-        // 避免卡住（保險）
         InteractionLock.GlobalLock = false;
         InteractionLock.CameraLock = false;
         FocusManager.FocusLock = false;
 
-        // ★關鍵：設成「最後一位的前一位」
+        // 設成最後一位的前一位，讓 StartNext() 會拿到 lastIndex
         currentIndex = lastIndex - 1;
 
-        // 跑你原本完整換人流程
         StartNext();
     }
 
 
+
     public IEnumerator ExecuteStep(FeedbackStep step)
     {
-        int myToken = roundToken; // ★抓當前輪次
+        int myToken = roundToken; // 抓當前輪次
 
         if (step.delay > 0)
         {
@@ -248,6 +254,44 @@ public class GameFlowController : MonoBehaviour
         //{
         //    yield return new WaitForSeconds(step.delay);
         //}
+        if (step.feedbackType == FeedbackType.BossJumpscare)
+        {
+            // 1) 一次性爆點：白閃 + 大圖
+            if (FeedbackSystem.Instance != null)
+                FeedbackSystem.Instance.Trigger(FeedbackType.Jumpscare); // 你原本的白閃 +（中/高）短音
+
+            // 大圖立刻跳出
+            if (jumpscareController != null)
+                jumpscareController.TriggerJumpscare(step.jumpscareImage);
+
+            // 2) 立刻開始持續效果（直到決策才停）
+            if (step.persistentUntilDecision && FeedbackSystem.Instance != null)
+            {
+                FeedbackSystem.Instance.StartBossPersistent(
+                    roarLoop: step.loopAudio,
+                    enableRumble: true,          // 高回饋才會真的震（StartBossPersistent 內有擋）
+                    shakeStrength: 12f,           // 你可做成 step 欄位
+                    shakeVibrato: 15
+                );
+            }
+
+            // 3) 約 1 秒後：把大圖變成「監視器覆蓋」
+            yield return new WaitForSeconds(1.0f);
+
+            // 隱藏大圖（你 JumpscareController 自己也會 hide，但這裡保險）
+            // (可不做，因為 showTime 你可設 1 秒)
+            // jumpscareController.Hide() 你目前是 private，保留 showTime=1 即可
+
+            // 覆蓋 CAM003（triggerCamIndex 會是 2）
+            if (camController != null && step.overrideImage != null && step.triggerCamIndex >= 0)
+                camController.SetRuntimeOverride(step.triggerCamIndex, step.overrideImage);
+
+            // 覆蓋 CAM002
+            if (camController != null && step.secondaryOverrideImage != null && step.secondaryOverrideCamIndex >= 0)
+                camController.SetRuntimeOverride(step.secondaryOverrideCamIndex, step.secondaryOverrideImage);
+
+            yield break;
+        }
 
         // 2. 處理回饋演出邏輯
         if (step.feedbackType == FeedbackType.Jumpscare)
@@ -281,7 +325,7 @@ public class GameFlowController : MonoBehaviour
 
         // 3. 處理監視器畫面的 Override (覆蓋環境圖，例如螢幕突然變黑或出現鬼影)
         // 這部分邏輯獨立於 Jumpscare 大圖，會改變監視器本身的 Sprite
-        if (step.overrideImage != null && step.triggerCamIndex >= 0)
+        if (camController != null && step.overrideImage != null && step.triggerCamIndex >= 0)
         {
             // 記錄到 CamController 的 RuntimeOverrides 字典中，確保切換回來時圖還在
             camController.SetRuntimeOverride(step.triggerCamIndex, step.overrideImage);
@@ -293,86 +337,77 @@ public class GameFlowController : MonoBehaviour
             }
         }
 
-        if (step.feedbackType == FeedbackType.BossJumpscare)
-        {
-            // 1) 一次性爆點：白閃 + 大圖
-            if (FeedbackSystem.Instance != null)
-                FeedbackSystem.Instance.Trigger(FeedbackType.Jumpscare); // 你原本的白閃 +（中/高）短音
-
-            // 大圖立刻跳出
-            if (jumpscareController != null)
-                jumpscareController.TriggerJumpscare(step.jumpscareImage);
-
-            // 2) 立刻開始持續效果（直到決策才停）
-            if (step.persistentUntilDecision && FeedbackSystem.Instance != null)
-            {
-                FeedbackSystem.Instance.StartBossPersistent(
-                    roarLoop: step.loopAudio,
-                    enableRumble: true,          // 高回饋才會真的震（StartBossPersistent 內有擋）
-                    shakeStrength: 12f,           // 你可做成 step 欄位
-                    shakeVibrato: 15
-                );
-            }
-
-            // 3) 約 1 秒後：把大圖變成「監視器覆蓋」
-            yield return new WaitForSeconds(1.0f);
-
-            // 隱藏大圖（你 JumpscareController 自己也會 hide，但這裡保險）
-            // (可不做，因為 showTime 你可設 1 秒)
-            // jumpscareController.Hide() 你目前是 private，保留 showTime=1 即可
-
-            // 覆蓋 CAM003（triggerCamIndex 會是 2）
-            if (step.overrideImage != null && step.triggerCamIndex >= 0)
-                camController.SetRuntimeOverride(step.triggerCamIndex, step.overrideImage);
-
-            // 覆蓋 CAM002
-            if (step.secondaryOverrideImage != null && step.secondaryOverrideCamIndex >= 0)
-                camController.SetRuntimeOverride(step.secondaryOverrideCamIndex, step.secondaryOverrideImage);
-
-            yield break;
-        }
 
     }
 
-    public void OnCheckListFinished()
+    //public void OnCheckListFinished()
+    //{
+    //    if (decisionUI != null) decisionUI.SetActive(true);
+
+    //    bool[] answers = checkListUI.GetAnswers();
+
+    //    IDCardDefinition card = currentCharacter.idCard; // 你的 CharacterDefinition 有 idCard :contentReference[oaicite:1]{index=1}
+
+    //    bool[] correctness = new bool[3];
+    //    correctness[0] = (answers[0] == card.isValid);
+    //    correctness[1] = (answers[1] == card.eyesNormal);
+    //    correctness[2] = (answers[2] == card.teethNormal);
+
+    //    // 這裡再丟進 Recorder
+    //    if (GameSessionRecorder.Instance != null)
+    //        GameSessionRecorder.Instance.SetChecklist(answers, correctness);
+
+    //}
+    public void OnChecklistSubmitted(bool[] answers, bool approve)
     {
-        if (decisionUI != null) decisionUI.SetActive(true);
+        if (InteractionLock.GlobalLock) return;
+        InteractionLock.GlobalLock = true;
 
-        bool[] answers = checkListUI.GetAnswers();
-
-        IDCardDefinition card = currentCharacter.idCard; // 你的 CharacterDefinition 有 idCard :contentReference[oaicite:1]{index=1}
-
-        bool[] correctness = new bool[3];
-        correctness[0] = (answers[0] == card.isValid);
-        correctness[1] = (answers[1] == card.eyesNormal);
-        correctness[2] = (answers[2] == card.teethNormal);
-
-        // 這裡再丟進 Recorder
-        if (GameSessionRecorder.Instance != null)
-            GameSessionRecorder.Instance.SetChecklist(answers, correctness);
-
-    }
-
-
-    public void ConfirmDecision(bool approve)
-    {
+        // Boss 持續效果要在這裡停（你原本是放在 ConfirmDecision）
         if (FeedbackSystem.Instance != null)
             FeedbackSystem.Instance.StopBossPersistent();
 
-        if (InteractionLock.GlobalLock) return;
-        InteractionLock.GlobalLock = true;   // ★先鎖，防連點
-
-        // ★新增：記錄這一輪的入境/不入境與是否正確
+        // 記錄：只存答案（含決策題）+ 決策對錯
         if (GameSessionRecorder.Instance != null)
+        {
+            GameSessionRecorder.Instance.SetChecklist(answers);
             GameSessionRecorder.Instance.FinalizeDecision(approve);
+        }
 
-        TutorialManager.Instance.AdvanceFromDecision();
-        idCardUI.ClearCard();
+        // 教學流程需要的話，沿用你原本「決策後進 Step9」的入口
+        if (TutorialManager.Instance != null)
+            TutorialManager.Instance.AdvanceFromDecision();
+
+        // 清 UI
+        if (idCardUI != null) idCardUI.ClearCard();
         if (checkListUI != null) checkListUI.Deactivate();
-        if (decisionUI != null) decisionUI.SetActive(false);
+        if (decisionUI != null) decisionUI.SetActive(false); // 你也可以之後直接從場景拔掉
 
+        // 下一位
         StartNext();
     }
+
+
+
+    //public void ConfirmDecision(bool approve)
+    //{
+    //    if (FeedbackSystem.Instance != null)
+    //        FeedbackSystem.Instance.StopBossPersistent();
+
+    //    if (InteractionLock.GlobalLock) return;
+    //    InteractionLock.GlobalLock = true;   // ★先鎖，防連點
+
+    //    // ★新增：記錄這一輪的入境/不入境與是否正確
+    //    if (GameSessionRecorder.Instance != null)
+    //        GameSessionRecorder.Instance.FinalizeDecision(approve);
+
+    //    TutorialManager.Instance.AdvanceFromDecision();
+    //    idCardUI.ClearCard();
+    //    if (checkListUI != null) checkListUI.Deactivate();
+    //    if (decisionUI != null) decisionUI.SetActive(false);
+
+    //    StartNext();
+    //}
 
 
     void ShowEnding()

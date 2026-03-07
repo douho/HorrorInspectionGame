@@ -287,17 +287,32 @@ public class CheckListUI : MonoBehaviour
         mode = UIMode.Desk;
     }
 
-    public bool[] GetAnswers()
+    public bool[] GetAnswers4()
     {
-        // Q0 身分證尚未過期、Q1 眼睛正常、Q2 牙齒正常
-        bool[] answers = new bool[3];
+        bool[] answers = new bool[4];
 
-        answers[0] = questions[0].okToggle.isOn; // 是
-        answers[1] = questions[1].okToggle.isOn;
-        answers[2] = questions[2].okToggle.isOn;
+        // 用「okToggle.isOn」代表選了左邊那格
+        // 前三題：okToggle=是 / badToggle=否
+        // 第四題：okToggle=放行 / badToggle=不放行
+        for (int i = 0; i < 4; i++)
+        {
+            answers[i] = questions[i].okToggle != null && questions[i].okToggle.isOn;
+        }
 
         return answers;
     }
+
+    //public bool[] GetAnswers()
+    //{
+    //    // Q0 身分證尚未過期、Q1 眼睛正常、Q2 牙齒正常
+    //    bool[] answers = new bool[3];
+
+    //    answers[0] = questions[0].okToggle.isOn; // 是
+    //    answers[1] = questions[1].okToggle.isOn;
+    //    answers[2] = questions[2].okToggle.isOn;
+
+    //    return answers;
+    //}
 
     private void CheckAllCompleted()
     {
@@ -459,22 +474,32 @@ public class CheckListUI : MonoBehaviour
     {
         Debug.Log("Submit 按鈕被按下了！");
 
-        
         OnSubmitPressed?.Invoke();// 教學事件：讓 TutorialManager 知道 Submit 被按下
 
-        gameFlow.OnCheckListFinished();//開啟入境/不入境 UI
-        //if (submitBtn != null)
-        //    submitBtn.SetActive(false);
+        // 1) 取得四題答案
+        bool[] answers = GetAnswers4();
 
-        mode = UIMode.Decision;
-        decisionIndex = 0;
+        // 2) 第四題（index 3）決定放行/不放行
+        // 規則：okToggle = 放行(Allow)，badToggle = 不放行(Reject)
+        bool approve = answers[3];
 
-        // 如果你想：Decision 出現時，先不要讓 checklist ring 還停在 toggle 上
-        if (focusRingCheck != null) focusRingCheck.SetActive(false);
+        // 3) 直接交給 GameFlowController：記錄 + 下一位
+        if (gameFlow != null)
+            gameFlow.OnChecklistSubmitted(answers, approve);
 
-        if (focusRingDecision != null) focusRingDecision.SetActive(true);
-        UpdateDecisionHighlight();
-        StartCoroutine(ReselectDecisionNextFrame());
+        //gameFlow.OnCheckListFinished();//開啟入境/不入境 UI
+        ////if (submitBtn != null)
+        ////    submitBtn.SetActive(false);
+
+        //mode = UIMode.Decision;
+        //decisionIndex = 0;
+
+        //// 如果你想：Decision 出現時，先不要讓 checklist ring 還停在 toggle 上
+        //if (focusRingCheck != null) focusRingCheck.SetActive(false);
+
+        //if (focusRingDecision != null) focusRingDecision.SetActive(true);
+        //UpdateDecisionHighlight();
+        //StartCoroutine(ReselectDecisionNextFrame());
 
     }
 

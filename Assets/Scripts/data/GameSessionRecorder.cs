@@ -15,8 +15,8 @@ public class DecisionRecord
 
     public float timeFromRoundStartSec;
 
-    public bool[] checklistAnswers;      // 長度 3
-    public bool[] checklistCorrectness;  // 長度 3
+    public bool[] checklistAnswers;      // 長度 4
+    //public bool[] checklistCorrectness;  // 長度 3
 }
 
 public class GameSessionRecorder : MonoBehaviour
@@ -88,20 +88,23 @@ public class GameSessionRecorder : MonoBehaviour
         {
             characterId = ch.characterId,
             groundTruthShouldAllow = ch.shouldAllow,
-            checklistAnswers = new bool[3],
-            checklistCorrectness = new bool[3],
+            checklistAnswers = new bool[4],
+            //checklistCorrectness = new bool[3],
         };
         roundStartTime = Time.time;
     }
 
-    public void SetChecklist(bool[] answers, bool[] correctness)
+    public void SetChecklist(bool[] answers)
     {
         if (current == null) return;
 
         current.timeFromRoundStartSec = Time.time - roundStartTime;
 
-        Array.Copy(answers, current.checklistAnswers, 3);
-        Array.Copy(correctness, current.checklistCorrectness, 3);
+        // 期望 answers 長度至少 4
+        int n = Mathf.Min(answers.Length, current.checklistAnswers.Length);
+        Array.Copy(answers, current.checklistAnswers, n);
+
+        //Array.Copy(correctness, current.checklistCorrectness, 3);
     }
 
     public void FinalizeDecision(bool approve)
