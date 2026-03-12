@@ -21,5 +21,5 @@ MonoBehaviour:
   jumpScareSequence: {fileID: 0}
   monitorImages:
   - {fileID: 21300000, guid: c7fc0354234ab5d43844d873bd838db8, type: 3}
-  - {fileID: 21300000, guid: acc18e94f15454444a9eefac6a6768fd, type: 3}
+  - {fileID: 21300000, guid: ef6deca6701982246a54435f2a89fceb, type: 3}
   - {fileID: 21300000, guid: 96ff4fc8eeb5333468f1adfa522454a3, type: 3}
