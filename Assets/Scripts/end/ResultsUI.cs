@@ -15,6 +15,10 @@ public class ResultsUI : MonoBehaviour
 
     void Start()
     {
+        // ... 前面的代碼維持不變 ...
+
+        // 在呼叫上傳前，先讓 ID 顯示為「連線中...」或「產號中...」
+        if (uidDisplayText != null) uidDisplayText.text = "ID: 產生號碼中...";
         var r = GameSessionRecorder.Instance;
         if (r == null) return;
 
@@ -25,6 +29,7 @@ public class ResultsUI : MonoBehaviour
         float t = r.sessionElapsedSec;
         TimeSpan ts = TimeSpan.FromSeconds(t);
         totalTime.text = $"{ts.Minutes:00}:{ts.Seconds:00}";
+
 
         // 2. 【新增】呼叫上傳功能
         // 尋找場景中的 DataManager (GameDataUploader)
@@ -39,11 +44,11 @@ public class ResultsUI : MonoBehaviour
             );
         }
 
-        if (uploader != null)
-        {
-            uidDisplayText.text = "ID: " + uploader.currentUID;
-        }
+    }
 
+    public void UpdateUIDDisplay(string newID)
+    {
+        if (uidDisplayText != null) uidDisplayText.text = "ID: " + newID;
     }
     public void BackToMainMenu()
     {

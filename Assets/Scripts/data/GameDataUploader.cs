@@ -60,7 +60,7 @@ public class GameDataUploader : MonoBehaviour
 
     IEnumerator PostData(string json)
     {
-        var request = new UnityWebRequest(url, "POST");
+        UnityWebRequest request = new UnityWebRequest(url, "POST");
         byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
         request.uploadHandler = new UploadHandlerRaw(bodyRaw);
         request.downloadHandler = new DownloadHandlerBuffer();
@@ -70,11 +70,16 @@ public class GameDataUploader : MonoBehaviour
 
         if (request.result == UnityWebRequest.Result.Success)
         {
-            Debug.Log("資料上傳成功！");
-        }
-        else
-        {
-            Debug.Log("上傳失敗：" + request.error);
+            // 關鍵：從雲端拿回正式的流水號 (001, 002...)
+            currentUID = request.downloadHandler.text;
+            Debug.Log("【雲端後台】上傳成功！分配到的 ID 是: " + currentUID);
+
+            // 這裡可以呼叫 UI 更新，讓玩家看到正式 ID
+            if (FindObjectOfType<ResultsUI>() != null)
+            {
+                // 假設你在 ResultsUI 寫了一個更新文字的 Function
+                FindObjectOfType<ResultsUI>().UpdateUIDDisplay(currentUID);
+            }
         }
     }
 }
