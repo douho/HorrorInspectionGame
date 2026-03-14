@@ -57,29 +57,69 @@ public class GameDataUploader : MonoBehaviour
         };
         StartCoroutine(PostData(JsonUtility.ToJson(data)));
     }
-
     IEnumerator PostData(string json)
     {
-        UnityWebRequest request = new UnityWebRequest(url, "POST");
-        byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
-        request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-        request.downloadHandler = new DownloadHandlerBuffer();
-        request.SetRequestHeader("Content-Type", "application/json");
+        int retryCount = 0;
+        int maxRetries = 3; // 最多重試 3 次
+        bool success = false;
 
-        yield return request.SendWebRequest();
-
-        if (request.result == UnityWebRequest.Result.Success)
+        while (!success && retryCount < maxRetries)
         {
-            // 關鍵：從雲端拿回正式的流水號 (001, 002...)
-            currentUID = request.downloadHandler.text;
-            Debug.Log("【雲端後台】上傳成功！分配到的 ID 是: " + currentUID);
+            UnityWebRequest request = new UnityWebRequest(url, "POST");
+            byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
+            request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+            request.downloadHandler = new DownloadHandlerBuffer();
+            request.SetRequestHeader("Content-Type", "application/json");
+            request.timeout = 10; // 設置 10 秒超時，避免無限等待
 
-            // 這裡可以呼叫 UI 更新，讓玩家看到正式 ID
-            if (FindObjectOfType<ResultsUI>() != null)
+            yield return request.SendWebRequest();
+
+            if (request.result == UnityWebRequest.Result.Success)
             {
-                // 假設你在 ResultsUI 寫了一個更新文字的 Function
-                FindObjectOfType<ResultsUI>().UpdateUIDDisplay(currentUID);
+                currentUID = request.downloadHandler.text;
+                FindObjectOfType<ResultsUI>()?.UpdateUIDDisplay(currentUID);
+                Debug.Log("【雲端後台】上傳成功！ID: " + currentUID);
+                success = true;
+            }
+            else
+            {
+                retryCount++;
+                Debug.LogWarning($"上傳失敗，正在進行第 {retryCount} 次重試... 錯誤: {request.error}");
+                if (FindObjectOfType<ResultsUI>() != null)
+                    FindObjectOfType<ResultsUI>().UpdateUIDDisplay("網路較慢，重新連線中...");
+
+                yield return new WaitForSeconds(2f); // 等待 2 秒後重試
             }
         }
+
+        if (!success)
+        {
+            if (FindObjectOfType<ResultsUI>() != null)
+                FindObjectOfType<ResultsUI>().UpdateUIDDisplay("上傳失敗，請聯繫研究員。");
+        }
     }
+    //IEnumerator PostData(string json)
+    //{
+    //    UnityWebRequest request = new UnityWebRequest(url, "POST");
+    //    byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
+    //    request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+    //    request.downloadHandler = new DownloadHandlerBuffer();
+    //    request.SetRequestHeader("Content-Type", "application/json");
+
+    //    yield return request.SendWebRequest();
+
+    //    if (request.result == UnityWebRequest.Result.Success)
+    //    {
+    //        // 關鍵：從雲端拿回正式的流水號 (001, 002...)
+    //        currentUID = request.downloadHandler.text;
+    //        Debug.Log("【雲端後台】上傳成功！分配到的 ID 是: " + currentUID);
+
+    //        // 這裡可以呼叫 UI 更新，讓玩家看到正式 ID
+    //        if (FindObjectOfType<ResultsUI>() != null)
+    //        {
+    //            // 假設你在 ResultsUI 寫了一個更新文字的 Function
+    //            FindObjectOfType<ResultsUI>().UpdateUIDDisplay(currentUID);
+    //        }
+    //    }
+    //}
 }
