@@ -116,7 +116,7 @@ public class TutorialManager : MonoBehaviour
         InteractionLock.CameraLock = false;  // 這行是關鍵
 
         dialogueManager.MoveToBottom();
-        dialogueManager.ShowDialogue("請用 【 R1 】 切換到下個監視器畫面，確認入關者眼睛狀況。\n為確保對象為人類，據觀察，多數「偽生物」的眼白會有紅色斑點。\n請多加注意。");
+        dialogueManager.ShowDialogue("接下來，為確保對象為人類，\n研究指出多數「偽生物」的眼白會有紅色斑點，請多加注意。\n請用 【 R1 】 切換到下個監視器畫面。");
         dialogueManager.nextKeyHint.SetActive(false);
     }
 
@@ -125,7 +125,7 @@ public class TutorialManager : MonoBehaviour
         InteractionLock.GlobalLock = false;
 
         dialogueManager.MoveToBottom();
-        dialogueManager.ShowDialogue("很好，再請切到下一個畫面。");
+        dialogueManager.ShowDialogue("很好，再請用 【 R1 】 切到下一個畫面。");
         dialogueManager.nextKeyHint.SetActive(false);
     }
 
