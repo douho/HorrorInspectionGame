@@ -31,9 +31,38 @@ public class ResultsUI : MonoBehaviour
         TimeSpan ts = TimeSpan.FromSeconds(t);
         totalTime.text = $"{ts.Minutes:00}:{ts.Seconds:00}";
 
+        // 【新增】產生答題明細字串
+        string detailRecord = "";
+        foreach (var record in r.records)
+        {
+            string result = record.isCorrect ? "O" : "X";
+            // 記錄格式：ID_角色編號:對錯
+            detailRecord += $"ID{record.characterId}:{result}|";
+        }
+        // 去除最後一個多餘的 "|"
+        if (detailRecord.Length > 0) detailRecord = detailRecord.TrimEnd('|');
+
         // 開始上傳與動畫
         isUploading = true;
         dotCoroutine = StartCoroutine(AnimateDots());
+
+        // 在 ResultsUI.cs 的 Start 裡面
+        string wrongDetail = "";
+        foreach (var record in r.records)
+        {
+            // 如果這題答錯了 (isCorrect 為 false)
+            if (!record.isCorrect)
+            {
+                // 只記錄 ID，並用逗號隔開 (例如: 1, 3, 5, 9)
+                wrongDetail += record.characterId + ", ";
+            }
+        }
+
+        // 去除最後一個多餘的逗號與空白
+        if (wrongDetail.Length > 2)
+            wrongDetail = wrongDetail.Substring(0, wrongDetail.Length - 2);
+        else if (string.IsNullOrEmpty(wrongDetail))
+            wrongDetail = "全對"; // 如果沒答錯，就顯示全對
 
         // 2. 【新增】呼叫上傳功能
         // 尋找場景中的 DataManager (GameDataUploader)
@@ -44,9 +73,12 @@ public class ResultsUI : MonoBehaviour
                 r.feedbackCondition.ToString(), // 遊玩版本 (以你的回饋等級當作版本)
                 r.sessionElapsedSec,            // 遊玩時間
                 r.CorrectCount(),               // 答對題數
-                r.WrongCount()                  // 答錯題數
+                r.WrongCount(),                  // 答錯題數
+                wrongDetail // 傳送過濾後的「答錯名單」
             );
         }
+
+
 
     }
     // 動態文字動畫：讓「...」跑起來

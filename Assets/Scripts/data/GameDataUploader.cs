@@ -12,6 +12,7 @@ public class GameData
     public float playTime;
     public int correctCount;
     public int wrongCount;
+    public string detail; // 新增：存放答題明細字串
 }
 
 
@@ -45,7 +46,7 @@ public class GameDataUploader : MonoBehaviour
     }
 
     // 當遊戲結束時調用這個 Function
-    public void UploadGameData(string ver, float time, int correct, int wrong)
+    public void UploadGameData(string ver, float time, int correct, int wrong, string detailStr)
     {
         GameData data = new GameData
         {
@@ -53,7 +54,8 @@ public class GameDataUploader : MonoBehaviour
             version = ver,
             playTime = time,
             correctCount = correct,
-            wrongCount = wrong
+            wrongCount = wrong,
+            detail = detailStr // 填入明細
         };
         StartCoroutine(PostData(JsonUtility.ToJson(data)));
     }

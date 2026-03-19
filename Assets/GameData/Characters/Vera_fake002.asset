@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01a3ac9a359a788439c2b7693e096f52, type: 3}
   m_Name: Vera_fake002
   m_EditorClassIdentifier: 
-  characterId: 0
+  characterId: 9
   displayName: 
   protrait: {fileID: 0}
   idCard: {fileID: 11400000, guid: 3859e9ce8ffff7c4fb35f262e4f4794b, type: 2}

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01a3ac9a359a788439c2b7693e096f52, type: 3}
   m_Name: Tatsumi_fake
   m_EditorClassIdentifier: 
-  characterId: 0
+  characterId: 3
   displayName: 
   protrait: {fileID: 0}
   idCard: {fileID: 11400000, guid: ce514bba42ab9ff4b8566476219da0a8, type: 2}

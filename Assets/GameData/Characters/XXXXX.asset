@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01a3ac9a359a788439c2b7693e096f52, type: 3}
   m_Name: XXXXX
   m_EditorClassIdentifier: 
-  characterId: 0
+  characterId: 4
   displayName: 
   protrait: {fileID: 0}
   idCard: {fileID: 11400000, guid: 78d30c57dbd9e8441a801bde6b52fd02, type: 2}
